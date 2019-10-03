@@ -22,6 +22,14 @@ class Vector {
       if (a instanceof Vector) return new Vector(-a.x,-a.y);
       return errorHandle()
      }
+     static distance = function(a,b) {
+      if (a instanceof Vector) return  Math.sqrt( ((a.x - b.x)**2) + ((a.y- b.y)**2) );
+      return errorHandle()
+     }
+     static distanceS = function(a,b) {
+      if (a instanceof Vector) return ( ((a.x - b.x)^2) + ((a.y- b.y)^2) );
+      return errorHandle()
+     }
     static subtract = function(a,b) {
       if (a instanceof Vector && b instanceof Vector ) return new Vector(a.x-b.x, a.y-b.y );
       return errorHandle()
@@ -45,3 +53,12 @@ class Vector {
 
   }
   
+
+
+  class Mouse {
+    static x = 0;
+    static y = 0;
+    static vector = new Vector();
+    set _vector(b) {Mouse.x = b.x; Mouse.y=b.y;}
+    get _vector() {return;} 
+  }
