@@ -30,7 +30,7 @@ class entity_player extends Entity {
         var speed = 0.269;
         this.customAngle = this.customAngle + (KEYS["d"] ? (delta*speed) : KEYS["a"] ? (delta*-speed) : 0 );
 
-        var localCircleRadius =circleRadius+21; 
+        var localCircleRadius =circleRadius; 
 		this.Posisition = new Vector(
             (cw/2-24)+(Math.cos(this.customAngle*Math.PI/180)*(localCircleRadius)),
             (ch/2-24)+(Math.sin(this.customAngle*Math.PI/180)*(localCircleRadius))
