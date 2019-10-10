@@ -1,3 +1,4 @@
+
 var vendors = ['webkit', 'moz'];
 for(var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
     window.requestAnimationFrame = window[vendors[x]+'RequestAnimationFrame'];
@@ -11,6 +12,7 @@ var canvas = document.getElementById('canvas'),
     cw = 1280,
     ch = 720,
     cx = null,
+    CanvasEnableClear = true, 
     fps = 1000,
     interval     =    1000/fps,
     lastTime     =    (new Date()).getTime(),
@@ -48,7 +50,7 @@ function gameLoop(evt) {
 
     if(delta > interval) {
     
-        cx.clearRect(0,0,cw,cw);
+        if (CanvasEnableClear) cx.clearRect(0,0,cw,cw);
         PreDraw();
         DrawStack(); 
         PostDraw(); 

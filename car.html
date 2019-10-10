@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>Animation Study</title>
+    <style>
+        *{margin:0;
+          padding:0;
+          background-color:#777777;
+        }
+        body{
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+        canvas{
+            border: 1px solid white;
+            background-color:#000;
+            width: 1280px;
+            height: 720px;
+        }
+    </style>
+ 
+</head> 
+<body>
+    <canvas id="canvas" width="1280" height="720" tabindex='1'></canvas>
+
+    <script src="js/dusk_pre_lib.js"></script>
+    <script src="js/entity.js"></script>
+    <script src="js/core_runtime.js"></script>
+<script>
+
+
+
+function deg2Rads(degrees){
+    return Math.PI/180 * degrees
+}
+var circleRadius = 120
+class entity_player extends Entity {
+    MaxSpeed = 10;
+    Mod = 1;
+    Speed = 0; 
+    Accel = 0.25;
+    InAccel = false;
+    keys ={forward:"w",left:"a",right:"d",reverse:"s"} //{forward:"i",left:"j",right:"l",reverse:"s"}
+    drag = 0.76;
+    Width = 42;
+    Height = 42;
+	Draw() {
+		cx.save();
+		var objx = this.Posisition.x + (0.5 * this.Width); // x of shape center
+		var objy = this.Posisition.y + (0.5 * this.Height); // y of shape center
+		
+	
+		cx.translate(objx, objy)
+
+
+		cx.rotate(this.Rotation * (Math.PI / 180))
+        cx.translate(-objx, -objy)
+        cx.beginPath();
+        cx.fillStyle = "yellow";
+		cx.rect(this.Posisition.x, this.Posisition.y, this.Width, this.Height);
+        cx.fill();
+        cx.stroke();
+       
+        
+        cx.restore();
+     
+
+	}
+	PreDraw() {
+        var Speed = 0.269;
+        this.InAccel = KEYS[this.keys.forward] || KEYS[this.keys.reverse];
+
+        if (KEYS[this.keys.forward]) {this.Mod = 1;}
+        else if (KEYS[this.keys.reverse]){this.Mod=-1;};
+        this.Rotation += ((KEYS[this.keys.right] ? (1) : KEYS[this.keys.left] ? (-1) : 0 )*delta*Speed);
+        if(this.InAccel && this.Speed < this.MaxSpeed){
+        this.Speed += this.Accel;
+
+        }else{
+        this.Speed *= this.drag ;
+        }
+        this.Speed *=  delta/15
+
+        this.Posisition = new Vector(this.Posisition.x+((this.Speed * this.Mod) * Math.cos(deg2Rads(this.Rotation))),
+        this.Posisition.y+( (this.Speed * this.Mod) * Math.sin(deg2Rads(this.Rotation))));
+      //  console.log(this.RotatedWidth );
+            this.Rotation = this.Rotation;
+	}
+}
+
+class entity_planet extends Entity {
+
+	Draw() {
+		cx.beginPath();
+		cx.fillStyle = "Green";
+		cx.arc(cw/2, ch/2, circleRadius, 0, Math.PI * 360);
+        cx.fill();
+        cx.stroke();
+		cx.beginPath();
+		cx.fillStyle = "Lime";
+		cx.arc(cw/2, ch/2, circleRadius-8, 0, Math.PI * 360);
+        cx.fill();
+	}
+
+}
+
+
+planet = new entity_planet();
+player = new entity_player();
+
+player.ClipToBounds = true;
+
+
+
+
+
+</script>
+</body>
+</html>

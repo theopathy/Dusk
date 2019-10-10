@@ -17,17 +17,20 @@ class Entity {
     constructor(a) {
         this.ClassName = a;
         this._ZIndex = 1;
-        this.Posisition = new Vector();
+        this._Posisition = new Vector();
         this.Visibility = true;
         this.Frame = 0;
         this.Animation = "idle";
         this.Width = 64
         this.Height = 64
-        this.Rotation = 0;
+        this._Rotation = 0;
         this.Gravity = 600;
+
+
         this.Physics = new PhysObj();
         this.Velocity = new Vector();
-        this.color = "#ff0"
+        this.ClipToBounds = false;
+        this.Color = "#ff0";
         _UID = 1 + _UID;
         this.UID = _UID;
         if (typeof drawStack[this._ZIndex] !== "object") {
@@ -37,9 +40,61 @@ class Entity {
         drawStack[this._ZIndex].push(this.UID);
         Entities[this.UID] = this;
 
+
+    }
+    get Rotation() {
+        return this._Rotation
+    }
+    set Rotation(x) {
+        x = x % 360;
+        if (x < 0) x += 360;
+        this._Rotation = x;
     }
 
+    get RotatedWidth() {
+        var r = Math.PI / 180 * (this._Rotation);
+        var a = Math.abs(this.Width * Math.cos(r));
+        var b = Math.abs(this.Height * Math.sin(r));
 
+        return a + b;
+    }
+    get RotatedHeight() {
+        var r = Math.PI / 180 * (this._Rotation);
+        var c = Math.abs(this.Height * Math.cos(r));
+        var d = Math.abs(this.Width * Math.sin(r));
+        return c + d;
+    }
+    get RotatedSize() {}
+    get Posisition() {
+        return this._Posisition;
+    }
+    set Posisition(n) {
+        if (this.ClipToBounds) {
+            this._Posisition = n;
+            var halfRotatedWidth = (this.RotatedWidth / 2)-23;
+            var halfRotatedHeight = (this.RotatedHeight / 2)-23;
+            var x = this._Posisition.x,
+                y = this.Posisition.y;
+            if (this.Posisition.x - halfRotatedWidth <= 0) {
+                // off left
+                x = halfRotatedWidth;
+            } else if (this.Posisition.x + halfRotatedWidth >= canvas.width) {
+                // off right
+                x = canvas.width - halfRotatedWidth;
+            }
+            if (this.Posisition.y - halfRotatedHeight <= 0) {
+                // off top
+                y = halfRotatedHeight;
+            } else if (this.Posisition.y + halfRotatedHeight >= canvas.height) {
+                // off bottom
+                y = canvas.height - halfRotatedHeight;
+            }
+            this._Posisition = new Vector(x, y);
+            return;
+        }
+        this._Posisition = n;
+
+    }
     set ZIndex(x) {
         for (var i = 0; i < ZIndexLimit - 1; i++) {
             var objx = drawStack[i];

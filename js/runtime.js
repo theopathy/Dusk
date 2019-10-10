@@ -37,6 +37,7 @@ class entity_player extends Entity {
             
             );
             this.Rotation = this.customAngle;
+           
 	}
 }
 

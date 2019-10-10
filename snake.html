@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>Animation Study</title>
+    <style>
+        *{margin:0;
+          padding:0;
+          background-color:#777777;
+        }
+        body{
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+        canvas{
+            border: 1px solid white;
+            background-color:#000;
+            width: 640px;
+            height: 640px;
+            
+        }
+        canvas {
+  image-rendering: optimizeSpeed;             /* Older versions of FF          */
+  image-rendering: -moz-crisp-edges;          /* FF 6.0+                       */
+  image-rendering: -webkit-optimize-contrast; /* Safari                        */
+  image-rendering: -o-crisp-edges;            /* OS X & Windows Opera (12.02+) */
+  image-rendering: pixelated;                 /* Awesome future-browsers       */
+  -ms-interpolation-mode: nearest-neighbor;   /* IE                            */
+}
+    </style>
+ 
+</head> 
+<body>
+    <canvas id="canvas" width="321" height="321" tabindex='1'></canvas>
+
+    <script src="js/dusk_pre_lib.js"></script>
+    <script src="js/entity.js"></script>
+    <script src="js/core_runtime.js"></script>
+<script>
+cw = 321;
+ch = 321;
+fps = 30,
+    interval     =    1000/fps,
+canvas = document.getElementById("canvas");
+ context = canvas.getContext("2d");
+ CanvasEnableClear = false;
+ var p=0;
+class entity_board extends Entity {
+
+ bw = 400;
+// Box height
+ bh = 400;
+// Padding
+ p = 0;
+
+
+Draw(){
+    for (var x = 0; x <= this.bw; x += 16) {
+        cx.moveTo(0.5 + x + p, p);
+        cx.lineTo(0.5 + x + p, this.bh + p);
+    }
+
+    for (var x = 0; x <= this.bh; x += 16) {
+        cx.moveTo(p, 0.5 + x + p);
+        cx.lineTo(this.bw + p, 0.5 + x + p);
+    }
+    cx.strokeStyle = "gray";
+
+    cx.stroke();
+}
+}
+
+function moveSnake() {
+    switch(player.Direction){
+    case 'up':
+      player.currentPosition.y = player.currentPosition.y - 16;
+     
+      break;
+
+    case 'down':
+    player.currentPosition.y = player.currentPosition.y + 16;
+     
+      break;
+
+    case 'left':
+    player.currentPosition.x = player.currentPosition.x - 16;
+      
+      break;
+
+    case 'right':
+    player.currentPosition.x = player.currentPosition.x + 16;
+     
+      break;
+  }
+  cx.fillStyle = "rgb(200,0,0)";
+  cx.fillRect(player.currentPosition.x , player.currentPosition.y, 16, 16);
+}
+currentPosition = [1, 1];
+var gridSize = 16;
+class entity_player extends Entity {
+    Width = 16;
+    Height = 16;
+    Direction = "right";
+    currentPosition = new Vector();
+
+	Draw() {
+
+	}
+	PreDraw() {
+
+	}
+
+
+
+ doKeyDown(event) {
+    var keyCode;
+
+if(event == null)
+{
+  keyCode = window.event.keyCode;
+}
+else
+{
+  keyCode = event.keyCode;
+}
+
+switch(keyCode)
+
+{
+  // left
+  case 37:
+    // set new position, and draw square at that position.
+
+    
+    player.Direction ="left";
+   // cx.fillRect(player.currentPosition.x, player.currentPosition.y, gridSize, gridSize);
+    break;
+ 
+  // up
+  case 38:
+  
+    player.Direction ="up";
+    //cx.fillRect(player.currentPosition.x, player.currentPosition.y, gridSize, gridSize);
+    break;
+ 
+  // right
+  case 39:
+  
+  //  cx.fillRect(player.currentPosition.x, player.currentPosition.y, gridSize, gridSize);
+  player.Direction = "right";
+    break;
+
+  // down
+  case 40:
+     
+   
+    player.Direction = "down";
+   // cx.fillRect(player.currentPosition.x, player.currentPosition.y, gridSize, gridSize);
+    break;
+
+  default:
+    break;
+}
+
+}
+
+}
+
+var grid = new entity_board();
+player = new entity_player();
+
+setInterval(moveSnake,250);
+
+canvas.addEventListener( "keydown", player.doKeyDown);
+
+
+
+</script>
+</body>
+</html>
