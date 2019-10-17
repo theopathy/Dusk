@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>Ship Example</title>
+    <style>
+        *{margin:0;
+          padding:0;
+          background-color:#777777;
+        }
+        body{
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+        #canvasbg{
+            border: 1px solid white;
+            background-color:#000;
+            width: 1280px;
+            height: 720px;
+        }
+        canvas{
+
+            background-color:transparent;
+            width: 1280px;
+            height: 720px;
+        }
+    </style>
+ 
+</head> 
+<body>
+
+        <div style="position: relative;">
+                <canvas id="canvasbg" width="1280px" height="720px" style="/* position: absolute; */left: 0;top: 0;z-index: 0;"></canvas>
+                  <script> 
+                 function getRandom(min, max) {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+    }           
+var canvas = document.getElementById("canvasbg"),
+context = canvas.getContext("2d"),
+stars = 500,
+colorrange = [0,60,240];
+for (var i = 0; i < stars; i++) {
+    var x = Math.random() * canvas.offsetWidth;
+    y = Math.random() * canvas.offsetHeight,
+    radius = Math.random() * 1.2,
+    hue = colorrange[getRandom(0,colorrange.length - 1)],
+    sat = getRandom(50,100);
+    context.beginPath();
+    context.arc(x, y, radius, 0, 360);
+    context.fillStyle = "hsl(" + hue + ", " + sat + "%, 88%)";
+    context.fill();
+}
+            
+                  </script>
+                <canvas id="canvas" width="1280px" height="720px    " style="position: absolute;left: 0;top: 0;z-index: 1;" tabindex="1"></canvas>
+               </div>
+    <script src="/js/dusk_pre_lib.js"></script>
+    <script src="/js/entity.js"></script>
+    <script src="/js/core_runtime.js"></script>
+<script>
+
+
+
+function deg2Rads(degrees){
+    return Math.PI/180 * degrees
+}
+
+
+entity_player_image = loadImage("ships.png") 
+fire_spritesheet = loadImage("fire_spritesheet.png")
+class entity_player extends Entity {
+    MaxSpeed = 600;
+    Mod = 1;
+    Speed = 0; 
+    Accel = 200;
+    InAccel = false;
+    keys ={forward:"w",left:"a",right:"d",reverse:"s"} //{forward:"i",left:"j",right:"l",reverse:"s"}
+    drag = 0.75;
+    Width = 64;
+    Height = 64;
+
+    fireFrame = 0;
+    fireOpactity = 1;
+    fireframeMax = 60;
+    _imageoffset = new Vector(0,32);
+	Draw() {
+		cx.save();
+		var objx = this.Posisition.x + (0.5 * this.Width); // x of shape center
+		var objy = this.Posisition.y + (0.5 * this.Height); // y of shape center
+		
+        
+		cx.translate(objx, objy)
+
+
+		cx.rotate((this.Rotation+90) * (Math.PI / 180))
+        cx.translate(-objx, -objy)
+        
+       // cx.fillStyle = "yellow";
+        cx.drawImage(entity_player_image,this._imageoffset.x,this._imageoffset.y,32,32 , this.Posisition.x, this.Posisition.y, this.Width, this.Height);
+        
+
+
+
+        cx.scale(1,-1);
+        var currentCellX=0;
+        var currentCellY=0;
+        currentCellX = (this.fireFrame % 8);
+     
+
+        currentCellY = Math.floor(this.fireFrame / 8);
+        currentCellX = ((currentCellX)*100)
+        currentCellY = currentCellY*100
+        currentCellX = 100;
+        cx.globalCompositeOperation = "lighter";
+        cx.drawImage(fire_spritesheet,currentCellX,currentCellY,100,100, this.Posisition.x, -(this.Posisition.y-this.Height) - 159, this.Width, this.Height);
+        this.fireFrame = this.fireFrame + 1;
+        if (this.fireFrame > 60) this.fireFrame = 0;
+        cx.restore();
+
+      
+	}
+	PreDraw() {
+        
+        
+        this.InAccel = KEYS[this.keys.forward] || KEYS[this.keys.reverse];
+   
+        if (KEYS[this.keys.forward]) {this.Mod = 1;}
+        else if (KEYS[this.keys.reverse]){this.Mod=-1;};
+        this.Rotation += ((KEYS[this.keys.right] ? (1) : KEYS[this.keys.left] ? (-1) : 0 )*(delta*180));
+        if(this.InAccel && this.Speed < this.MaxSpeed){
+        this.Speed += (this.Accel);
+
+        }else{
+        this.Speed *= (this.drag) ;
+        }
+
+        this.Speed = this.Speed * (delta)
+       
+
+        this.Posisition = new Vector(
+            this.Posisition.x+((this.Speed * this.Mod) * Math.cos(deg2Rads(this.Rotation))),
+        this.Posisition.y+( (this.Speed * this.Mod) * Math.sin(deg2Rads(this.Rotation))));
+      //  console.log(this.RotatedWidth );
+            this.Rotation = this.Rotation;
+	}
+    PostDraw() {
+      
+    }
+}
+
+class enemy1 extends entity_player {
+_imageoffset = new Vector(0,64)
+Speed = 100;
+state = 0
+figure_ = 0;
+PreDraw() {
+this.Rotation = 80; 
+switch(this.state) {
+    case 0:
+        this.Rotation = GetAngleFromTwoVectors(this.Posisition,player.Posisition)
+        break;
+    case 1:
+        this.Rotation = Math.sin(this.figure_/360)*360;
+        this.figure_++
+}
+this.Posisition.x = this.Posisition.x+(this.Speed*delta)* Math.cos(deg2Rads(this.Rotation))
+this.Posisition.y = this.Posisition.y+( (this.Speed*delta) * Math.sin(deg2Rads(this.Rotation)));
+        
+}
+}
+
+
+function Global_PostDraw() {
+
+}
+
+player = new entity_player();
+enemy = new enemy1();
+player.ClipToBounds = true;
+player.Posisition = new Vector(cw/2-player.Width/2,ch/2-player.Height/2);
+
+
+
+
+</script>
+</body>
+</html>

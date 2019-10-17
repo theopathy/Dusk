@@ -71,21 +71,21 @@ class Entity {
     set Posisition(n) {
         if (this.ClipToBounds) {
             this._Posisition = n;
-            var halfRotatedWidth = (this.RotatedWidth / 2)-23;
-            var halfRotatedHeight = (this.RotatedHeight / 2)-23;
+            var halfRotatedWidth = (this.RotatedWidth / 2)-(this.Width/2);
+            var halfRotatedHeight = (this.RotatedHeight / 2)-(this.Height/2);
             var x = this._Posisition.x,
                 y = this.Posisition.y;
             if (this.Posisition.x - halfRotatedWidth <= 0) {
                 // off left
                 x = halfRotatedWidth;
-            } else if (this.Posisition.x + halfRotatedWidth >= canvas.width) {
+            } else if (this.Posisition.x + halfRotatedWidth >= canvas.width+(this.Width/2)) {
                 // off right
                 x = canvas.width - halfRotatedWidth;
             }
             if (this.Posisition.y - halfRotatedHeight <= 0) {
                 // off top
                 y = halfRotatedHeight;
-            } else if (this.Posisition.y + halfRotatedHeight >= canvas.height) {
+            } else if (this.Posisition.y + halfRotatedHeight >= canvas.height+(this.Height/2)) {
                 // off bottom
                 y = canvas.height - halfRotatedHeight;
             }
@@ -142,10 +142,10 @@ function PreDraw() {
         Entities[i].PreDraw();
     }
 }
-
+function Global_PostDraw() {}
 function PostDraw() {
 
-
+    Global_PostDraw();
     for (var i = 0; i < Entities.length; i++) {
         Entities[i].PostDraw();
     }

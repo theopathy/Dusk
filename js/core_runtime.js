@@ -6,14 +6,18 @@ for(var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
       window[vendors[x]+'CancelAnimationFrame'] || window[vendors[x]+'CancelRequestAnimationFrame'];
 }
 
-
+function loadImage(path) {
+  var i = new Image();
+  i.src = path;
+  return i;
+}
 
 var canvas = document.getElementById('canvas'),
     cw = 1280,
     ch = 720,
     cx = null,
     CanvasEnableClear = true, 
-    fps = 1000,
+    fps = 60,
     interval     =    1000/fps,
     lastTime     =    (new Date()).getTime(),
     currentTime  =    0,
@@ -42,28 +46,25 @@ var canvas = document.getElementById('canvas'),
             KEYS[e.key]=false;
           
             }
+
 function gameLoop(evt) {
     window.requestAnimationFrame(gameLoop);
-
     currentTime = (new Date()).getTime();
     delta = (currentTime-lastTime);
+    
 
     if(delta > interval) {
-    
         if (CanvasEnableClear) cx.clearRect(0,0,cw,cw);
+        delta = delta/1000
         PreDraw();
         DrawStack(); 
         PostDraw(); 
-      
-       
-      
         lastTime = currentTime - (delta % interval);
     }
 }
 
-
 if (typeof (canvas.getContext) !== undefined) {
     cx = canvas.getContext('2d');
-
     gameLoop();
 }
+

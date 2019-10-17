@@ -62,3 +62,10 @@ class Vector {
     set _vector(b) {Mouse.x = b.x; Mouse.y=b.y;}
     get _vector() {return;} 
   }
+
+function GetAngleFromTwoVectors(object,target){
+  var dx = target.x - object.x 
+  var dy = target.y - object.y 
+  return (Math.atan2(dy,dx) )* (180/Math.PI)
+}
+  
