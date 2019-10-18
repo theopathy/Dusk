@@ -11,6 +11,9 @@ class Vector {
     set x(a) {this._x=a}
     set y(a)  {this._y=a}
     
+    inverse() {
+      
+    }
 
 
 
@@ -35,7 +38,8 @@ class Vector {
       return errorHandle()
      }
      static multiply = function(a,b) {
-      if (a instanceof Vector && b instanceof Number ) return new Vector(a.x*b,a.y*b);
+       
+      console.log("multiply",a,b) ;return new Vector(a.x*b,a.y*b);
       return errorHandle()
      }
      static cross = function(a,b) {
