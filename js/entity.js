@@ -49,9 +49,9 @@ class Entity {
         var r = Math.PI / 180 * (this._Rotation);
         var a = Math.abs(this.Width * Math.cos(r));
         var b = Math.abs(this.Height * Math.sin(r));
-
         return a + b;
     }
+    
     get RotatedHeight() {
         var r = Math.PI / 180 * (this._Rotation);
         var c = Math.abs(this.Height * Math.cos(r));
@@ -162,6 +162,7 @@ class entity_ball extends Entity {
 
 
 var DEBUG_DRAWCOLLISIONWIREFRAME = true;
+
 class PhysObj {
     constructor(vert = [new Vector(0, 0), new Vector(1, 0), new Vector(1, 1), new Vector(0, 1)], parent = null) {
         this.isAwake = false;
@@ -169,6 +170,7 @@ class PhysObj {
         this.colliding = true;
         this.parent = parent;
         this.rotation = 0;
+        this.isConvex = true;
     }
     awake() {
         this.awake = true;
@@ -176,41 +178,86 @@ class PhysObj {
     sleep() {
         this.awake = false
     }
-    get edge() {
+    get edge() { 
         var edges = []
         for (var i = 0; i < this.vertex.length; i++) {
-            var b = (i + 1 == this.vertex.length) ? 0 : i + 1
+            var b = (i + 1 == this.vertex.length) ? 0 : i + 1;
 
-            edges[i] = (new Vector((this.vertex[b].x - this.vertex[i].x), (this.vertex[b].y - this.vertex[i].y)))
+            edges[i] = (new Vector((this.vertex[b].x - this.vertex[i].x), (this.vertex[b].y - this.vertex[i].y)));
+    
         }
-        return edges
+        return edges;
+    }
+
+    GetEdgeByIndex(n) {
+        var edges = []
+        var vertices = this.GetVertexByIndex(n);
+        for (var i = 0; i < vertices.length; i++) {
+            var b = (i + 1 == vertices.length) ? 0 : i + 1;
+
+            edges[i] = (new Vector((vertices[b].x - vertices[i].x), (vertices[b].y - vertices[i].y )));
+          //  console.log(edges[i])
+        }
+        return edges;
+    }
+
+    GetVertexByIndex(n) {
+        var points = [];
+        var rot = (this.parent != null ? this.parent.Rotation : this.rotation) * Math.PI / 180;
+        var centerPos = new Vector(0.5, 0.5);
+        centerPos.x *= this.parent.Width;
+        centerPos.y *= this.parent.Height;
+        for (var i = 0; i < this.VertexMap[n].length; i++) {
+            var px = this.VertexMap[n][i].x * this.parent.Width,
+                py = this.VertexMap[n][i].y * this.parent.Height;
+            points.push(new Vector(
+                (centerPos.x + (px - centerPos.x) * Math.cos(rot) - (py - centerPos.x) * Math.sin(rot)) + this.parent.Posisition.x,
+                (centerPos.y + (px - centerPos.x) * Math.sin(rot) + (py - centerPos.y) * Math.cos(rot)) + this.parent.Posisition.y //*this.parent.Height
+            )); 
+      
+        }
+  
+        return points;
+    }
+    GetVertexGroupCount() {
+       return this.VertexMap.length; 
+  
     }
     set vertex(a) {
         this._vertex = a;
+        this.buildVertexMap();
     }
-
+    buildVertexMap() {
+        var newArr = []
+        var curArr = [...this._vertex];
+        console.log("building new Vertex map for " + this.parent.ClassName)
+        var i = 0
+        while (curArr.length > 2) {
+        newArr[i++] = [curArr[0],curArr[1],curArr[2]];
+        curArr.splice(1, 1);
+        }
+        this.VertexMap = newArr;
+       
+    }
     get vertex() {
         var points = [];
-        var rot = (this.parent != null ? this.parent.Rotation : this.rotation) * Math.PI / 180
-        var centerPos = new Vector(0.5, 0.5)
-        // console.log(centerPos);
-        //centerPos = new Vector(0.5,0.5)
-        // console.log(centerPos);
-        centerPos.x *= this.parent.Width
-        centerPos.y *= this.parent.Height
+        var rot = (this.parent != null ? this.parent.Rotation : this.rotation) * Math.PI / 180;
+        var centerPos = new Vector(0.5, 0.5);
+        centerPos.x *= this.parent.Width;
+        centerPos.y *= this.parent.Height;
         for (var i = 0; i < this._vertex.length; i++) {
-
             var px = this._vertex[i].x * this.parent.Width,
                 py = this._vertex[i].y * this.parent.Height;
             points.push(new Vector(
                 (centerPos.x + (px - centerPos.x) * Math.cos(rot) - (py - centerPos.x) * Math.sin(rot)) + this.parent.Posisition.x,
                 (centerPos.y + (px - centerPos.x) * Math.sin(rot) + (py - centerPos.y) * Math.cos(rot)) + this.parent.Posisition.y //*this.parent.Height
-            ))
+            )); 
+      
         }
-        return points
+ 
+        return points;
     }
     center() {
-
         var arr = this._vertex;
         var x = arr.map(x => x.x);
         var y = arr.map(x => x.y);
@@ -221,35 +268,35 @@ class PhysObj {
 
 }
 
-var rot = 45; // rotation
 
-physAVertices = [
-    new Vector(0, 0),
-    new Vector(0, 110),
-    new Vector(110, 110),
-    new Vector(110, 0)
-];
+var indexMap = 0;
+function coll_draw_debug(obj,drawMap = true,offset = 0,color="red") {
 
-
-
-
-physBVertices = [
-    new Vector(130, 130),
-    new Vector(80, 100),
-    new Vector(25, 150),
-];
-
-
-var objA = new PhysObj(physAVertices)
-var objB = new PhysObj(physBVertices)
-
-function coll_draw_debug(obj) {
-    cx.beginPath();
 
     cx.lineWidth = "1";
     cx.strokeStyle = "red";
+    drawMap = true;
+    if (drawMap) {
+        cx.strokeStyle = color;
+        cx.beginPath();
+      
+        var curPos = obj.GetVertexByIndex(offset)[0];
 
+        var edges = obj.GetEdgeByIndex(offset);
 
+        cx.moveTo(curPos.x, curPos.y);
+        for (var i = 0; i < edges.length; i++) {
+            
+            curPos = Vector.add(curPos, edges[i]);
+            cx.lineTo(curPos.x, curPos.y);
+        }
+    
+    
+    
+    
+        cx.stroke();}
+
+    else {
     cx.beginPath();
     var curPos = obj.vertex[0]
     cx.moveTo(curPos.x, curPos.y);
@@ -262,20 +309,27 @@ function coll_draw_debug(obj) {
 
 
 
-    cx.stroke();
+    cx.stroke();}
+
+
 }
 
-function coll_check_between(physA, physB) {
+function checkOverlap_subRoutine(physA, physB, IndexOfA=0, IndexOfB=0) {
     var prline = null;
     var pStck = [];
     var amin, amax, bmin, bmax = null;
     var dot = 0;
-    for (var i = 0; i < physA.edge.length; i++) {
-        prline = new Vector(-physA.edge[i].y, physA.edge[i].x);
+    var physAEdge = physA.GetEdgeByIndex(IndexOfA),
+        physBEdge = physB.GetEdgeByIndex(IndexOfB);
+    var physAVertex = physA.GetVertexByIndex(IndexOfA),
+        physBVertex = physB.GetVertexByIndex(IndexOfB);
+    
+    for (var i = 0; i < physAEdge.length; i++) {
+        prline = new Vector(-physAEdge[i].y, physAEdge[i].x);
         pStck.push(prline);
     }
-    for (var i = 0; i < physB.edge.length; i++) {
-        prline = new Vector(-physB.edge[i].y, physB.edge[i].x);
+    for (var i = 0; i < physBEdge.length; i++) {
+        prline = new Vector(-physBEdge[i].y, physBEdge[i].x);
         pStck.push(prline);
     }
     for (var i = 0; i < pStck.length; i++) {
@@ -283,8 +337,8 @@ function coll_check_between(physA, physB) {
         amax = null;
         bmin = null;
         bmax = null;
-        for (var j = 0; j < physA.vertex.length; j++) {
-            dot = physA.vertex[j].x * pStck[i].x + physA.vertex[j].y * pStck[i].y;
+        for (var j = 0; j < physAVertex.length; j++) {
+            dot = physAVertex[j].x * pStck[i].x + physAVertex[j].y * pStck[i].y;
             if (amax === null || dot > amax) {
                 amax = dot;
             }
@@ -292,8 +346,8 @@ function coll_check_between(physA, physB) {
                 amin = dot;
             }
         }
-        for (var j = 0; j < physB.vertex.length; j++) {
-            dot = physB.vertex[j].x * pStck[i].x + physB.vertex[j].y * pStck[i].y;
+        for (var j = 0; j < physBVertex.length; j++) {
+            dot = physBVertex[j].x * pStck[i].x + physBVertex[j].y * pStck[i].y;
             if (bmax === null || dot > bmax) {
                 bmax = dot;
             }
@@ -310,4 +364,15 @@ function coll_check_between(physA, physB) {
     return true;
 }
 
-console.log("center" + objA.center)
+
+function checkOverlap(physA, physB) {
+    var collide = false;
+    for (var i = 0; i < physA.GetVertexGroupCount(); i++) {
+        for (var n = 0; n < physB.GetVertexGroupCount(); n++) {
+            collide = checkOverlap_subRoutine(physA,physB,i,n);
+            if (collide) return true;
+        }
+    }
+    return false
+}
+

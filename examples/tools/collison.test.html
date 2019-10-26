@@ -86,8 +86,7 @@
                 forward: "w",
                 left: "a",
                 right: "d",
-                reverse: "s",
-                space: "space"
+                reverse: "s"
             } //{forward:"i",left:"j",right:"l",reverse:"s"}
             drag = 0.75;
             Width = 64;
@@ -98,17 +97,11 @@
             fireframeMax = 60;
             _imageoffset = new Vector(0, 32);
             constructor(a) {
-                super(a);            
+                super(a);
                 this.Physics.vertex = [
-                
-                
-                new Vector(0.28,0.5),
-                new Vector(0.18,0.14),
-                new Vector(0.86,0.48),
-                new Vector(0.18,0.88)
-                                
-
-
+                    new Vector(0.22, 0),
+                    new Vector(0.9, 0.5),
+                    new Vector(0.22, 1)
                 ]
 
             }
@@ -170,7 +163,7 @@
 
                 this.Speed = this.Speed * (delta)
 
-                
+
                 this.Posisition = new Vector(
                     this.Posisition.x + ((this.Speed * this.Mod) * Math.cos(deg2Rads(this.Rotation))),
                     this.Posisition.y + ((this.Speed * this.Mod) * Math.sin(deg2Rads(this.Rotation))));
@@ -178,29 +171,31 @@
                 this.Rotation = this.Rotation;
             }
             PostDraw() {
-                coll_draw_debug(this.Physics,true,0);
-                coll_draw_debug(this.Physics,true,1,"cyan");
+                coll_draw_debug(this.Physics);
             }
         }
 
         class enemy1 extends entity_player {
             _imageoffset = new Vector(0, 64)
-            Speed = 0;
+            Speed = 100;
             state = 0
             figure_ = 0;
             PreDraw() {
+                // coll_draw_debug(objA);
+                // coll_draw_debug(objB);
+
                 this.Rotation = 80;
                 switch (this.state) {
                     case 0:
-                        this.Rotation = GetAngleFromTwoVectors(this.Posisition, player.Posisition);
+                        this.Rotation = GetAngleFromTwoVectors(this.Posisition, player.Posisition)
                         break;
                     case 1:
                         this.Rotation = Math.sin(this.figure_ / 360) * 360;
-                        this.figure_++;
+                        this.figure_++
                 }
                 this.Posisition.x = this.Posisition.x + (this.Speed * delta) * Math.cos(deg2Rads(this.Rotation))
                 this.Posisition.y = this.Posisition.y + ((this.Speed * delta) * Math.sin(deg2Rads(this.Rotation)));
-                console.log("is collding: " + checkOverlap(this.Physics, player.Physics))
+                console.log("is collding: " + coll_check_between(this.Physics, player.Physics))
             }
         }
 
@@ -211,8 +206,6 @@
 
         player = new entity_player();
         enemy = new enemy1();
-        enemy.state = 2;
-        enemy.Posisition = new Vector(200,200)
         player.ClipToBounds = true;
         player.Posisition = new Vector(cw / 2 - player.Width / 2, ch / 2 - player.Height / 2);
     </script>

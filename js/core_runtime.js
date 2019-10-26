@@ -1,3 +1,16 @@
+var canvas = document.getElementById('canvas');
+
+////// EVENTS
+var q = {}
+var onKeyDown = new CustomEvent('KeyDown', {detail: {key: q.key}});
+var onKeyUp = new Event('KeyUp');
+function RegisterEvent(id,func) {
+  canvas.addEventListener(id, function (e) { func(e) }, false);
+}
+/// STOP
+//RegisterEvent("KeyDown",function(k) {})
+
+
 
 var vendors = ['webkit', 'moz'];
 for(var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
@@ -12,8 +25,13 @@ function loadImage(path) {
   return i;
 }
 
-var canvas = document.getElementById('canvas'),
-    cw = 1280,
+function updateCanvas(a,b) {
+  cw = a;
+  ch = b;
+}
+var logKey = false
+
+ var cw = 1280,
     ch = 720,
     cx = null,
     CanvasEnableClear = true, 
@@ -27,8 +45,8 @@ var canvas = document.getElementById('canvas'),
     // MOUSE CODE START
     function getMousePos(canvas, evt) {
         var rect = canvas.getBoundingClientRect();
-        Mouse.x =evt.clientX - rect.left
-        Mouse.y =evt.clientY - rect.top}
+        Mouse.x = evt.clientX - rect.left
+        Mouse.y = evt.clientY - rect.top}
       canvas.addEventListener('mousemove', function(evt) {
         Mouse._vector = getMousePos(canvas, evt);
       }, false);
@@ -40,10 +58,14 @@ var canvas = document.getElementById('canvas'),
     function doKeyDown(e) {
 
         //alert( e.key);
-        KEYS[e.key]=true;
-        }
+ 
+        KEYS[e.keyCode == 32 ? "space" : e.key]=true;
+        q.key=e.keyCode == 32 ? "space" : e.key;
+        canvas.dispatchEvent(onKeyDown);
+      
+      }
         function doKeyUp(e) {
-            KEYS[e.key]=false;
+            KEYS[e.keyCode == 32 ? "space" : e.key]=false;
           
             }
 

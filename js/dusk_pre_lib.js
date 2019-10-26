@@ -64,7 +64,7 @@ class Vector {
     static y = 0;
     static vector = new Vector();
     set _vector(b) {Mouse.x = b.x; Mouse.y=b.y;}
-    get _vector() {return;} 
+    get _vector() {return vector;} 
   }
 
 function GetAngleFromTwoVectors(object,target){
