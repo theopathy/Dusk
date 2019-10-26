@@ -5,101 +5,69 @@
 <head>
     <meta charset="utf-8" />
     <title>Ship Example</title>
-    <style>
+    <link rel="stylesheet" type="text/css" href="tool.css">
+    <link rel="stylesheet" type="text/css" href="tool.light.css">
 
-* {
-            margin: 0;
-            padding: 0;
-            
-        }
+</style>
 
-        body {
-            background-color:#121212;
-        }
-        .sidebar {
-
-        }
-        #cnvs {
-            background-color:#121212;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            margin:auto;
-        }
-        #canvasbg {
-            border: 1px solid white;
-            background-color:#121212;
-            width: 1280px;
-            height: 720px;
-        }
-		#bgHighlight {background-color: #801336;color:#ee4540;font-size: 24px;
-        font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        font-weight: 100;
-            
-}
-        canvas {
-
-            background-color: transparent;
-            width: 820px;
-            height: 820px;
-        }
-        button{padding:5px; margin:4px;}
-        .slider {
-  -webkit-appearance: none;
-  width: 35%;
-  height: 15px;
-  border-radius: 5px;  
-  background: #d3d3d3;
-  outline: none;
-  opacity: 0.7;
-  -webkit-transition: .2s;
-  transition: opacity .2s;
-}
-
-.slider::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 25px;
-  height: 25px;
-  border-radius: 50%; 
-  background: #4CAF50;
-  cursor: pointer;
-}
-
-.slider::-moz-range-thumb {
-  width: 25px;
-  height: 25px;
-  border-radius: 50%;
-  background: #4CAF50;
-  cursor: pointer;
-}
-    
-    </style>
 
 </head>
 
 <body>
         <div style="
-            height: 36px;
+            height: 24px;
             width: 100%;
-        " id="bgHighlight"> <div style="margin-left:25px">DUSK - Collision Tool</div></div>
-            <div class="sidebar" style="
-            style: block;
-        "> </div>
+        " id="bgHighlight"> <div style="margin-left:4px">DUSK - Collision Tool</div></div>
+         
+         <div style="
+            height: 30px;
+            width: 100%;
+        " id="bgHighlight"> 
+
+       
+        <div class="dropdown">
+            <button class="dropbtn">File</button>
+            <div class="dropdown-content">
+              <a href ="#" onclick="OpenNewFile()">Open New File</a>
+              <a href="#">Open Collision File</a>
+              <a href="#">Save As Collision File</a>
+              <a href="#">Save As String</a>
+            </div>
+          </div>
+           <div class="dropdown">
+            <button class="dropbtn">Edit</button>
+            <div class="dropdown-content">
+              <a href="#" onclick="setCollBox()">Set Collison To Box</a>
+              <a href="#">Set Collision to bound box</a>
+              
+            </div>
+          </div>
+    </div>
+
+
+         
+         
+         <div class="sidebar"> </div>
+
+
            <div id="cnvs" style="
             width: 820px;
         ">
             <canvas id="canvas" width="820px" height="820px" tabindex="1"></canvas>
             <input type="range" min="0.1" step="0.1" max="5" value="1" class="slider" id="myRange">
-            <input type="file" id="imageLoader" name="imageLoader">
+            <input type="file" id="imageLoader" name="imageLoader" style="visibility:hidden;">
         </div>
     <script src="../../js/dusk_pre_lib.js"></script>
     <script src="../../js/entity.js"></script>
     <script src="../../js/core_runtime.js"></script>
     <script>
-        updateCanvas(820,820)
+
+        function OpenNewFile() {
+            document.getElementById("imageLoader").click();  
+        }
+        function setCollBox() {
+            imgd.Physics._vertex = [new Vector(0, 0), new Vector(1, 0), new Vector(1, 1), new Vector(0, 1)]
+        }
         var imagee = null;
         var scale = 1;
 
@@ -110,6 +78,7 @@ scale = this.value;
 
 var selectedPoly =0 ;
 var isDrag = false;
+var isDragBg = false;
 canvas.addEventListener('click', function(evt) {
         console.log("hey")
       }, false);
@@ -134,11 +103,11 @@ canvas.onmousedown = function(e){
    
     }
 
-
+    isDragBg = true;
     //imgd.Physics._vertex[selectedPoly] = new Vector((Mouse.x-6)/(imagee.width*scale),(Mouse.y-6)/(imagee.height*scale));
 }
 canvas.onmouseup = function(e){
-    isDrag = false;
+    isDrag = false;isDragBg=false;
 }
 var Snapping = 50;
 function dumpVertices () {
@@ -148,7 +117,8 @@ class image_display extends Entity {
 
 Draw() {
     if (imagee == null ) return;
-    if (isDrag)imgd.Physics._vertex[selectedPoly] = new Vector(Math.floor((Mouse.x-6)/(imagee.width*scale)*Snapping)/Snapping,Math.floor((Mouse.y-6)/(imagee.height*scale)*Snapping)/Snapping);
+  
+    if (isDrag )imgd.Physics._vertex[selectedPoly] = new Vector(Math.floor((Mouse.x-6)/(imagee.width*scale)*Snapping)/Snapping,Math.floor((Mouse.y-6)/(imagee.height*scale)*Snapping)/Snapping);
     this.Width = imagee.width*scale;
     this._Posisition = new Vector(12,12)
     this.Height = imagee.height*scale;
