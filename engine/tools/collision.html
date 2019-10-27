@@ -4,7 +4,7 @@
 
 <head>
     <meta charset="utf-8" />
-    <title>Ship Example</title>
+    <title>Dusk SDK - Collision</title>
     <link rel="stylesheet" type="text/css" href="tool.css">
     <link rel="stylesheet" type="text/css" href="tool.light.css">
 
@@ -13,7 +13,14 @@
 
 </head>
 
-<body>
+
+<body class = "jctx-host jctx-id-right">
+        <ul class="jctx jctx-id-right jctx-white ">
+                <li data-action="NewPoint">Insert New Point</li>
+                <li data-action="DelPoint">Remove Selected Point</li>
+             
+
+            </ul>
         <div style="
             height: 24px;
             width: 100%;
@@ -31,14 +38,14 @@
               <a href ="#" onclick="OpenNewFile()">Open New File</a>
               <a href="#">Open Collision File</a>
               <a href="#">Save As Collision File</a>
-              <a href="#">Save As String</a>
+              <a href="#" onclick="SaveToClipboard()">Save As String To Clipboard</a>
             </div>
           </div>
            <div class="dropdown">
             <button class="dropbtn">Edit</button>
             <div class="dropdown-content">
               <a href="#" onclick="setCollBox()">Set Collison To Box</a>
-              <a href="#">Set Collision to bound box</a>
+              <a href="#" onclick="SetCollHullBox()">Set Collision to bound box</a>
               
             </div>
           </div>
@@ -57,10 +64,30 @@
             <input type="range" min="0.1" step="0.1" max="5" value="1" class="slider" id="myRange">
             <input type="file" id="imageLoader" name="imageLoader" style="visibility:hidden;">
         </div>
+        <script src="justContextMenu.js"></script>
     <script src="../../js/dusk_pre_lib.js"></script>
     <script src="../../js/entity.js"></script>
     <script src="../../js/core_runtime.js"></script>
     <script>
+
+	function handleMenuAction(evt) {
+        switch (evt) {
+            case "NewPoint":
+            var nv = (selectedPoly+1) == imgd.Physics._vertex.length ? 0 : selectedPoly+1;
+            var currentpoint = imgd.Physics._vertex[selectedPoly]
+            var nextPoint = imgd.Physics._vertex[nv] 
+            imgd.Physics._vertex.splice(nv,0,new Vector((currentpoint.x+nextPoint.x)/2, (currentpoint.y+nextPoint.y)/2));
+            selectedPoly = nv;
+            break;
+            case "DelPoint":
+                if ( imgd.Physics._vertex.length > 3) {
+                    var nxt = (selectedPoly+1) == imgd.Physics._vertex.length ? 0 : selectedPoly+1;
+            imgd.Physics._vertex.splice(selectedPoly,1);
+                selectedPoly = nxt;} break;
+            default: alert("Action required: " + evt);
+        }
+		
+	}
 
         function OpenNewFile() {
             document.getElementById("imageLoader").click();  
@@ -68,6 +95,28 @@
         function setCollBox() {
             imgd.Physics._vertex = [new Vector(0, 0), new Vector(1, 0), new Vector(1, 1), new Vector(0, 1)]
         }
+        function SaveToClipboard() {
+            Browser.CopyStringToClipboard(buildStringFromVertex());
+        }
+        
+        function SetCollHullBox() {
+            var minX = Number.MAX_SAFE_INTEGER;
+            var maxX = -Number.MAX_SAFE_INTEGER;
+            var minY = Number.MAX_SAFE_INTEGER;
+            var maxY = -Number.MAX_SAFE_INTEGER;
+            for(var i = 0; i < imgd.Physics._vertex.length; i++) {
+                var x = imgd.Physics._vertex[i].x;
+                var y = imgd.Physics._vertex[i].y;
+                minX = Math.min(minX, x);
+                maxX = Math.max(maxX, x);
+                minY = Math.min(minY, y);
+                maxY = Math.max(maxY, y);    
+
+}
+
+imgd.Physics._vertex = [new Vector(minX, minY), new Vector(maxX, minY), new Vector(maxX, maxY), new Vector(minX, maxY)]
+        }
+
         var imagee = null;
         var scale = 1;
 
@@ -160,12 +209,14 @@ Draw() {
 
 }
 imgd = new image_display();
-var buildString = ""
+function buildStringFromVertex() {
+var buildString = "["
 for (var i = 0; i < imgd.Physics.vertex.length; i++) {
-    buildString = buildString + ("new Vector("+imgd.Physics._vertex[i].x+","+imgd.Physics._vertex[i].y+"),") + "\n";
-    
+    buildString = buildString + ("new Vector("+imgd.Physics._vertex[i].x+","+imgd.Physics._vertex[i].y+")") +( imgd.Physics.vertex.length-1 == i ? "]" : ",\n");
     }
-    console.log(buildString);
+    return buildString;
+}
+
 var imageLoader = document.getElementById('imageLoader');
     imageLoader.addEventListener('change', handleImage, false);
 function handleImage(e){

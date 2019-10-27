@@ -73,3 +73,18 @@ function GetAngleFromTwoVectors(object,target){
   return (Math.atan2(dy,dx) )* (180/Math.PI)
 }
   
+
+ class Browser {
+  static CopyStringToClipboard (str) {
+
+    var textobj = document.createElement('textarea');
+    textobj.style = {left: '-6532px',
+    position: 'absolute' };
+    textobj.setAttribute('readonly', '');
+    textobj.value = str;
+    document.body.appendChild(textobj);
+    textobj.select();
+    document.execCommand('copy');
+    document.body.removeChild(textobj);
+    }
+}
