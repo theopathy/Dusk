@@ -65,10 +65,12 @@
         <canvas id="canvas" width="1280px" height="720px    " style="position: absolute;left: 0;top: 0;z-index: 1;"
             tabindex="1"></canvas>
     </div>
+    <script>var ENGINE_USE_LAYOUTS = false;</script>
     <script src="/js/dusk_pre_lib.js"></script>
     <script src="/js/entity.js"></script>
     <script src="/js/core_runtime.js"></script>
     <script>
+       
         function deg2Rads(degrees) {
             return Math.PI / 180 * degrees
         }
@@ -205,6 +207,33 @@
         }
 
 
+        class bullet extends Entity {
+            Speed = 800;
+            ClassName = "bullet";
+            constructor(r = 0) {
+                super()
+                this.Rotation = r
+                this.Width = 32;
+                this.Height = 4;
+            }
+            PreDraw() {
+                this.Posisition.x = this.Posisition.x + (this.Speed * delta) * Math.cos(deg2Rads(this.Rotation))
+                this.Posisition.y = this.Posisition.y + ((this.Speed * delta) * Math.sin(deg2Rads(this.Rotation)));
+            }
+            Draw() {
+                cx.save();
+		var objx = this.Posisition.x + (0.5 * this.Width); // x of shape center
+		var objy = this.Posisition.y + (0.5 * this.Height); // y of shape center
+		cx.translate(objx, objy)
+		cx.rotate(this.Rotation * (Math.PI / 180))
+        cx.translate(-objx, -objy)
+        cx.beginPath();
+        cx.fillStyle = "white";
+		cx.rect(this.Posisition.x, this.Posisition.y, this.Width, this.Height);
+        cx.fill();
+        cx.restore();
+            }
+        }
         function Global_PostDraw() {
 
         }

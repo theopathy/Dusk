@@ -7,8 +7,8 @@ for (var i = 0; i < ZIndexLimit - 1; i++) {
 }
 
 class Entity {
-    constructor(a) {
-        this.ClassName = a;
+    constructor() {
+        this.ClassName = "unset";
         this._ZIndex = 1;
         this._Posisition = new Vector();
         this.Visibility = true;
@@ -24,6 +24,7 @@ class Entity {
         this.Physics.parent = this;
         this.Velocity = new Vector();
         this.ClipToBounds = false;
+        this.DestoryOutOfBounds = false;
         this.Color = "#ff0";
         _UID = 1 + _UID;
         this.UID = _UID;
