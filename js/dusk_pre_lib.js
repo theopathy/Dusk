@@ -88,3 +88,9 @@ function GetAngleFromTwoVectors(object,target){
     document.body.removeChild(textobj);
     }
 }
+Layouts = []
+class Layout {
+  static Load (layoutname) {
+
+  }
+}

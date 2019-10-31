@@ -5,7 +5,18 @@ _UID = -1
 for (var i = 0; i < ZIndexLimit - 1; i++) {
     drawStack[i] = new Array();
 }
+class FrameData {
+    constructor() { 
+        this.Image = "";
+        this.Frames = 1;
+        this.FrameDelay = 20; 
+        this.GetFrame = function() {
+            return [] //Returns Image, SizeX, SizeY, OffsetX,OffsetY 
+        }
+    }
 
+    
+}
 class Entity {
     constructor() {
         this.ClassName = "unset";
@@ -13,13 +24,16 @@ class Entity {
         this._Posisition = new Vector();
         this.Visibility = true;
         this.Frame = 0;
-        this.Animation = "idle";
+        this.FrameData = [];
+        this.Animation = "none";
         this.Width = 64
+        this.FlipImage = false;
         this.Height = 64
         this._Rotation = 0;
         this.Gravity = 600;
-
-
+        this.NextFrameTime = 20;
+        this._DrawOverride=false;
+        this.Image = ""
         this.Physics = new PhysObj();
         this.Physics.parent = this;
         this.Velocity = new Vector();
@@ -112,9 +126,37 @@ class Entity {
         drawStack[x].push(this.UID);
         this._ZIndex = x;
     }
-    Draw() {};
+    Draw() { 
+        
+        if (this._DrawOverride) return ;
+
+        this.NextFrameTime--;
+        if (this.NextFrameTime < 0) {
+            this.Frame++;
+            if (this.Frame > this.FrameData[this.Animation].Image.length-1) this.Frame=0;
+            this.NextFrameTime=this.FrameData[this.Animation].FrameDelay;
+        };
+        cx.save();
+        
+        var objx = this.Posisition.x + (0.5 * this.Width); // x of shape center
+        var objy = this.Posisition.y + (0.5 * this.Height); // y of shape center
+
+
+        cx.translate(objx, objy)
+
+
+        cx.rotate((this.Rotation) * (Math.PI / 180))
+        cx.translate(-objx, -objy)
+
+        // cx.fillStyle = "yellow";
+        var posX = this.Posisition.x;
+        if (this.FlipImage) {cx.scale(-1, 1); posX=-posX;  cx.translate(-this.Width/2,0)}
+       
+        cx.drawImage(this.FrameData[this.Animation].Image[this.Frame], posX, this.Posisition.y, this.Width, this.Height);
+        cx.restore();
+        };
     PreDraw() {}
-    PostDraw() {}
+    PostDraw() {  }
     Phys() {}
 }
 
