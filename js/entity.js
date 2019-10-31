@@ -18,7 +18,7 @@ class FrameData {
     
 }
 class Entity {
-    constructor() {
+    constructor(DrawOverrider=false) {
         this.ClassName = "unset";
         this._ZIndex = 1;
         this._Posisition = new Vector();
@@ -32,7 +32,7 @@ class Entity {
         this._Rotation = 0;
         this.Gravity = 600;
         this.NextFrameTime = 20;
-        this._DrawOverride=false;
+        this._DrawOverride=DrawOverrider;
         this.Image = ""
         this.Physics = new PhysObj();
         this.Physics.parent = this;
@@ -128,7 +128,7 @@ class Entity {
     }
     Draw() { 
         
-        if (this._DrawOverride) return ;
+        if (this.DrawOverride) return ;
 
         this.NextFrameTime--;
         if (this.NextFrameTime < 0) {
@@ -150,7 +150,7 @@ class Entity {
 
         // cx.fillStyle = "yellow";
         var posX = this.Posisition.x;
-        if (this.FlipImage) {cx.scale(-1, 1); posX=-posX;  cx.translate(-this.Width/2,0)}
+        if (this.FlipImage) {cx.scale(-1, 1); posX=-posX;  cx.translate(-this.Width,0)}
        
         cx.drawImage(this.FrameData[this.Animation].Image[this.Frame], posX, this.Posisition.y, this.Width, this.Height);
         cx.restore();

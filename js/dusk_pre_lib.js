@@ -39,7 +39,8 @@ class Vector {
      }
      static multiply = function(a,b) {
        
-      console.log("multiply",a,b) ;return new Vector(a.x*b,a.y*b);
+     // console.log("multiply",a,b) ;
+      return new Vector(a.x*b,a.y*b);
       return errorHandle()
      }
      static cross = function(a,b) {

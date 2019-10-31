@@ -1,4 +1,5 @@
 updateCanvas(1280,720);//SET GAME TO 720p
+cx.imageSmoothingEnabled = false;
 function lerp (start, end, amt){
     return (1-amt)*start+amt*end
   }
@@ -7,16 +8,33 @@ function lerp (start, end, amt){
             return Math.PI / 180 * degrees
         }  
 
-
-        entity_player_image = loadImage("ships.png")
+        var fxx = "assets/images/frames/";
+        var UI_HEART_EMPTY = loadImage(fxx+"ui_heart_empty.png");
+        var UI_HEART_HALF  = loadImage(fxx+"ui_heart_half.png");
+        var UI_HEART_FULL  = loadImage(fxx+"ui_heart_full.png");
         function loadMultipleFrames(namframes) {
             
         }
-        var fxx = "assets/images/frames/";
+        var heartdist = 16*3
+        class entity_UI extends Entity {
+           constructor() {
+               super()
+               this.DrawOverride = true;
+           }
+            PostDraw() {
+                var i;
+                var allEmpty = false;
+                for (i = 0; i<player.MaxHealth; i=i+2) {
+               
+            //    cx.drawImage((allempty?UI_HEART_EMPTY, 6+(i/2 * heartdist),6,heartdist,heartdist);
+            }
+            }
+        }
         class entity_player extends Entity {
             MaxSpeed = 400; 
             Speed = 0;
-
+            MaxHealth = 6;
+            Health = 6;
             keys = {
                 forward: "w",
                 left: "a",
@@ -61,12 +79,12 @@ function lerp (start, end, amt){
                 var speedGain = 1200; 
                
                 if (KEYS[this.keys.forward] ? !KEYS[this.keys.reverse] : KEYS[this.keys.reverse])//XOR
-                    this.YSpeed = Math.min(this.MaxSpeed,(this.YSpeed + 1)*1.5);
+                    this.YSpeed = Math.min(this.MaxSpeed,(this.YSpeed + 1)*15.5);
                 else 
                     this.YSpeed = 0;
 
                 if (KEYS[this.keys.right] ? !KEYS[this.keys.left] : KEYS[this.keys.left]) //XOR 
-                    this.XSpeed = Math.min(this.MaxSpeed,((this.XSpeed + 1)*1.5));
+                    this.XSpeed = Math.min(this.MaxSpeed,((this.XSpeed + 1)*15.5));
                 else 
                     this.XSpeed = 0;
                 this.Posisition = new Vector(
@@ -87,4 +105,4 @@ function lerp (start, end, amt){
 
 
         player = new entity_player();
-        
+        UI = new entity_UI();
