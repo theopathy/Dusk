@@ -1,4 +1,5 @@
 var circleRadius = 120
+console.log(noob); 
 class entity_player extends Entity {
     customAngle = 0;
 	Draw() {

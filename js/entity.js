@@ -17,6 +17,10 @@ class FrameData {
 
     
 }
+class Camera {
+    static Posisition = new Vector(0,0);
+
+}
 class Entity {
     constructor(DrawOverrider=false) {
         this.ClassName = "unset";
@@ -137,9 +141,9 @@ class Entity {
             this.NextFrameTime=this.FrameData[this.Animation].FrameDelay;
         };
         cx.save();
-        
-        var objx = this.Posisition.x + (0.5 * this.Width); // x of shape center
-        var objy = this.Posisition.y + (0.5 * this.Height); // y of shape center
+        var PX = this.Posisition.x - Camera.Posisition.x, PY = this.Posisition.y -Camera.Posisition.y
+        var objx = PX + (0.5 * this.Width); // x of shape center
+        var objy = PY + (0.5 * this.Height); // y of shape center
 
 
         cx.translate(objx, objy)
@@ -149,10 +153,10 @@ class Entity {
         cx.translate(-objx, -objy)
 
         // cx.fillStyle = "yellow";
-        var posX = this.Posisition.x;
+        var posX = PX;
         if (this.FlipImage) {cx.scale(-1, 1); posX=-posX;  cx.translate(-this.Width,0)}
        
-        cx.drawImage(this.FrameData[this.Animation].Image[this.Frame], posX, this.Posisition.y, this.Width, this.Height);
+        cx.drawImage(this.FrameData[this.Animation].Image[this.Frame], posX, PY, this.Width, this.Height);
         cx.restore();
         };
     PreDraw() {}
