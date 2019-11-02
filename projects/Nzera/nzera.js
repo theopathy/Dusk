@@ -44,11 +44,36 @@ function loadMultipleFrames(image, namframes) {
 }
 var heartdist = 16 * 3
 
+class dungeon_phys extends Entity {
+    constructor() {
+        super();
+        this.DrawOverride = true;
+        this.Physics.buildVertexMap(true);
+    }
+    PreDraw() {
+        console.log(IsOverlap(this.Physics,player.Physics))
+    }
+Draw() {
+
+    
+    
+    cx.beginPath();
+    cx.fillStyle = "rgba(100,35,35,0.4)";
+    cx.rect(-Camera.Posisition.x+this.Posisition.x, -Camera.Posisition.y+this.Posisition.y, this.Width, this.Height);
+    cx.fill();
+    cx.stroke();
+
+    
+    cx.restore();
+}
+
+}
 
 class dungeon extends Entity {
     constructor() {
         super();
         this.DrawOverride = true;
+        this.Posisition = new Vector();
     }
     TilesWidth = 18;
     TilesHeight = 12;
@@ -126,6 +151,7 @@ class entity_player extends Entity {
     fireOpactity = 1;
     fireframeMax = 60;
     _imageoffset = new Vector(0, 32);
+    
     constructor(a) {
         super(a);
 
@@ -147,6 +173,11 @@ class entity_player extends Entity {
         this.FrameData["walk"] = frameData2;
 
         this.Animation = "idle";
+        this.Physics.vertex = [new Vector(0.26,0.42),
+            new Vector(0.8,0.42),
+            new Vector(0.8,1),
+            new Vector(0.26,1)]
+        this.Physics.buildVertexMap(true);
     }
     XSpeed = 0;
     YSpeed = 0;
@@ -172,6 +203,8 @@ class entity_player extends Entity {
         } else this.Animation = "idle";
         Camera.Posisition = Vector.add(this.Posisition, new Vector((-1280 / 2) + this.Width / 2, (-720 / 2) + (this.Height / 1.2)));
 
+
+        
     }
     PostDraw() {
 
@@ -197,7 +230,17 @@ class entity_slime extends entity_player {
 
 
 layout = new dungeon();
+layout_phys = new dungeon_phys();
+
+layout_phys.Width = 48 * 6;
+layout_phys.Height = 48;
+layout_phys.Posisition.x = -48 * 8;
+layout_phys.Posisition.y = -48 * 4;
+
 layout.Posisition.x = -48 * 8;
 layout.Posisition.y = -48 * 4;
 player = new entity_player();
+player.ZIndex = 5;
 UI = new entity_UI();   
+
+//layout2 = new dungeon();

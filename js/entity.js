@@ -274,15 +274,17 @@ class PhysObj {
         this._vertex = a;
         this.buildVertexMap();
     }
-    buildVertexMap() {
+    buildVertexMap(DoDumpInstead) {
         var newArr = []
         var curArr = [...this._vertex];
         console.log("building new Vertex map for " + this.parent.ClassName)
         var i = 0
+        if (DoDumpInstead ) {newArr[0]=this._vertex}
+        else
         while (curArr.length > 2) {
         newArr[i++] = [curArr[0],curArr[1],curArr[2]];
         curArr.splice(1, 1);
-        }
+        };
         this.VertexMap = newArr;
        
     }
@@ -361,7 +363,7 @@ function coll_draw_debug(obj,drawMap = true,offset = 0,color="red") {
 
 }
 
-function checkOverlap_subRoutine(physA, physB, IndexOfA=0, IndexOfB=0) {
+function checkOverlap_subRoutine(physA, physB, IndexOfA=0, IndexOfB=0,leakEdges) {
     var prline = null;
     var pStck = [];
     var amin, amax, bmin, bmax = null;
@@ -421,5 +423,8 @@ function checkOverlap(physA, physB) {
         }
     }
     return false
+    
 }
 
+
+   function IsOverlap(a,b) { return checkOverlap(a,b);};
