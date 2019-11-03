@@ -32,6 +32,8 @@ var wall_corner_bottom_right = (loadImage (fxx+"wall_corner_bottom_right.png"))
 
 var wall_corner_top_left =      (loadImage (fxx+"wall_corner_top_left.png"));
 var wall_corner_top_right =      (loadImage (fxx+"wall_corner_top_right.png"))
+var wall_side_mid_right = loadImage(fxx+"wall_side_mid_right.png")
+
 
 function loadMultipleFrames(image, namframes) {
     var arr = []
@@ -47,24 +49,45 @@ var heartdist = 16 * 3
 class dungeon_phys extends Entity {
     constructor() {
         super();
+        this.ZIndex=10; 
         this.DrawOverride = true;
         this.Physics.buildVertexMap(true);
+        this.IsVert = true
     }
-    PreDraw() {
-        console.log(IsOverlap(this.Physics,player.Physics))
-    }
-Draw() {
+   
+     
+        
+      Draw() {
+        cx.beginPath();
+        cx.fillStyle = "rgba(100,35,35,0.4)";
+        cx.rect(-Camera.Posisition.x+this.Posisition.x, -Camera.Posisition.y+this.Posisition.y, this.Width, this.Height);
+        cx.fill();
+        cx.stroke();
+    
+        
+        cx.restore();
+      }  
+    
+Phys() {
 
     
     
-    cx.beginPath();
-    cx.fillStyle = "rgba(100,35,35,0.4)";
-    cx.rect(-Camera.Posisition.x+this.Posisition.x, -Camera.Posisition.y+this.Posisition.y, this.Width, this.Height);
-    cx.fill();
-    cx.stroke();
 
-    
-    cx.restore();
+
+
+    if (IsOverlap(this.Physics,player.Physics)) { 
+      //  if (player.Posisition.y > this.Posisition.y-22)
+      
+      if (this.IsVert )
+         player.Posisition._y = player.PreviousPosition.y;
+      else
+         player.Posisition._x = player.PreviousPosition.x; 
+      //  player.Posisition.y = this.Posisition.y-22 + (this.Height) - 30; 
+       
+
+        Camera.Posisition = Vector.add(player.Posisition, new Vector((-1280 / 2) + player.Width / 2, (-720 / 2) + (player.Height / 1.2)));
+        
+    }
 }
 
 }
@@ -74,7 +97,7 @@ class dungeon extends Entity {
         super();
         this.DrawOverride = true;
         this.Posisition = new Vector();
-    }
+      }
     TilesWidth = 18;
     TilesHeight = 12;
 
@@ -82,6 +105,7 @@ class dungeon extends Entity {
     Draw() {
         for (var i = 0; i < this.TilesWidth; i++) {
             for (var n = 0; n < this.TilesHeight; n++) {
+                
                 var posx = -Camera.Posisition.x + (i * 48) + this.Posisition.x;
                 var posy = -Camera.Posisition.y + (n * 48) + this.Posisition.y;
 
@@ -92,7 +116,10 @@ class dungeon extends Entity {
             
 
 
-
+                    if (i==0 || i== this.TilesWidth-1) {
+                        cx.drawImage(wall_side_mid_right
+                        ,posx,  posy - 48 , 16 * 3, 16 * 3)
+                    }
                 if (n == 0 || (n == this.TilesHeight - 1)) {
                     var isLeftOrRightOrNone = (i == 0) ? wall_left : ((i == this.TilesWidth - 1) ? wall_right : wall_mid)
                    // var isLeftOrRightOrNone2 = (ni == 0) ? (n==0 ?  wall_corner_bottom_right: wall_corner_bottom_left) : ((i == this.TilesWidth - 1) ? (n==0 ?  wall_corner_top_right: wall_corner_top_left) : wall_top)
@@ -173,15 +200,13 @@ class entity_player extends Entity {
         this.FrameData["walk"] = frameData2;
 
         this.Animation = "idle";
-        this.Physics.vertex = [new Vector(0.26,0.42),
-            new Vector(0.8,0.42),
-            new Vector(0.8,1),
-            new Vector(0.26,1)]
+        this.Physics.vertex = [new Vector(0.26,0.42),new Vector(0.8,0.42),new Vector(0.8,1),new Vector(0.26,1)]
         this.Physics.buildVertexMap(true);
     }
     XSpeed = 0;
     YSpeed = 0;
     PreDraw() {
+       
         var speedGain = 1200;
         if (KEYS[this.keys.forward] ? !KEYS[this.keys.reverse] : KEYS[this.keys.reverse]) //XOR
             this.YSpeed = Math.min(this.MaxSpeed, (this.YSpeed + 1) ** 3.7);
@@ -203,11 +228,15 @@ class entity_player extends Entity {
         } else this.Animation = "idle";
         Camera.Posisition = Vector.add(this.Posisition, new Vector((-1280 / 2) + this.Width / 2, (-720 / 2) + (this.Height / 1.2)));
 
-
         
     }
     PostDraw() {
-
+        cx.beginPath();
+        cx.fillStyle = "rgba(100,35,35,0.4)";
+        cx.rect(-Camera.Posisition.x+this.Posisition.x, -Camera.Posisition.y+this.Posisition.y, this.Width, this.Height);
+        cx.fill();
+        cx.stroke();
+        this.PreviousPosition = new Vector(this.Posisition.x, this.Posisition.y);
     }
 }
 
@@ -237,6 +266,13 @@ layout_phys.Height = 48;
 layout_phys.Posisition.x = -48 * 8;
 layout_phys.Posisition.y = -48 * 4;
 
+layout_phys2 = new dungeon_phys();
+
+layout_phys2.Width = 48 ;
+layout_phys2.Height = 48 * 6;
+layout_phys2.Posisition.x = -48 * 8;
+layout_phys2.Posisition.y = -48 * 4;
+layout_phys2.IsVert = false;
 layout.Posisition.x = -48 * 8;
 layout.Posisition.y = -48 * 4;
 player = new entity_player();

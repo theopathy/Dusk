@@ -164,35 +164,36 @@ class Entity {
     Phys() {}
 }
 
+
 function DrawStack() {
+    for (var i = 0; i < Entities.length; i++) {
+        Entities[i].PreDraw();
+
+    }
+    for (var i = 0; i < Entities.length; i++) {
+        Entities[i].Phys();
+    }
     for (var i = 0; i < drawStack.length; i++) {
         var zlist = drawStack[i];
 
         for (var j = 0; j < zlist.length; j++) { // console.log("in stack");
             Entities[zlist[j]].Draw()
-        }
-    }
-
-}
-
-function PreDraw() {
-
-    for (var i = 0; i < Entities.length; i++) {
-        Entities[i].Phys();
-        Entities[i].PreDraw();
-    }
-}
-
-function Global_PostDraw() {}
-
-function PostDraw() {
-
-    Global_PostDraw();
+        } }
     for (var i = 0; i < Entities.length; i++) {
         Entities[i].PostDraw();
     }
-
 }
+
+
+
+
+
+            
+
+
+
+
+
 class entity_ball extends Entity {
     Draw() {
         cx.beginPath();

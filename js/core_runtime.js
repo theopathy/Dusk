@@ -75,9 +75,10 @@ function gameLoop(evt) {
     if(delta > interval) {
         if (CanvasEnableClear) cx.clearRect(0,0,cw,cw);
         delta = delta/1000
-        PreDraw();
+        
+   
         DrawStack(); 
-        PostDraw(); 
+
         lastTime = currentTime - (delta % interval);
     }
 }
