@@ -304,14 +304,16 @@ class entity_player extends Entity {
 }
 
 var SlimeFrames = loadMultipleFrames(fxx + "zombie_idle_anim_f$t.png", 4);
-class entity_slime extends entity_player {
+class entity_enemy_base extends entity_player {
     PreDraw() {
     }
+    CanBeAttackedByPlayer = true;
     constructor(a) {
         super(a);
         this.FrameData["idle"].Image = SlimeFrames;
         this.Width = 16 * 3.5;
         this.Height = 16 * 3.5;
+        this.CanBeAttackedByPlayer = true;
     }
 }
 
@@ -349,6 +351,20 @@ class entity_player_knight extends entity_player {
  
     }
 }
+
+function doAttack () {
+
+    
+    for (n in Entities){
+        var ent = Entities[n]
+        if ( ent instanceof entity_enemy_base ) {
+        console.log(Vector.distance(player.Posisition,ent.Posisition));
+        console.log("hey")
+
+        }
+    }
+
+}
 canvas.addEventListener("keydown", function (event) { if (event.keyCode != 32) return;
     
     
@@ -357,15 +373,17 @@ canvas.addEventListener("keydown", function (event) { if (event.keyCode != 32) r
         player.SwordState = 1;
         player.SwordRotation++;
         var n = new entity_attack((GetAngleFromTwoVectors(new Vector(1280/2,720/2),new Vector(Mouse.x,Mouse.y))));
-        n.Posisition = player.Posisition
+        n.Posisition = player.Posisition;
+        doAttack ();
     }
 
     if (player.SwordRotation == 180 ) {
         player.SwordState = -1;
-        console.log("test");
+
         player.SwordRotation--;
         var n = new entity_attack((GetAngleFromTwoVectors(new Vector(1280/2,720/2),new Vector(Mouse.x,Mouse.y))));
         n.Posisition = player.Posisition
+        doAttack ();
     }
 
     }, 

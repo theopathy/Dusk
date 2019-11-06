@@ -30,7 +30,7 @@ class Vector {
       return errorHandle()
      }
      static distanceS = function(a,b) {
-      if (a instanceof Vector) return ( ((a.x - b.x)^2) + ((a.y- b.y)^2) );
+      if (a instanceof Vector && b instanceof Vector) return ( ((a.x - b.x)**2) + ((a.y- b.y)**2) );
       return errorHandle()
      }
     static subtract = function(a,b) {
