@@ -35,7 +35,8 @@ class Entity {
         this.Height = 64
         this._Rotation = 0;
         this.Gravity = 600;
-        this.NextFrameTime = 20;
+        this.Opacity = 1;
+        this.NextFrameTime = 0;
         this._DrawOverride=DrawOverrider;
         this.Image = ""
         this.Physics = new PhysObj();
@@ -53,6 +54,23 @@ class Entity {
         drawStack[this._ZIndex].push(this.UID);
         Entities[this.UID] = this;
 
+
+    }
+    delete() {
+        for (var i = 0; i < ZIndexLimit - 1; i++) {
+            var objx = drawStack[i];
+            var boolExample = true,
+                j = 0;
+            while (boolExample && j < objx.length) {
+                j++;
+
+                if (objx[j] == this.UID) {
+                    drawStack[i].splice(j, 1);
+                    boolExample = false;
+                }
+            }
+        }
+        Entities[this.UID] = undefined;
 
     }
     get Rotation() {
@@ -134,8 +152,8 @@ class Entity {
         
         if (this.DrawOverride) return ;
 
-        this.NextFrameTime--;
-        if (this.NextFrameTime < 0) {
+        this.NextFrameTime=this.NextFrameTime -1 ;
+        if (this.NextFrameTime <= 0) {
             this.Frame++;
             if (this.Frame > this.FrameData[this.Animation].Image.length-1) this.Frame=0;
             this.NextFrameTime=this.FrameData[this.Animation].FrameDelay;
@@ -155,8 +173,9 @@ class Entity {
         // cx.fillStyle = "yellow";
         var posX = PX;
         if (this.FlipImage) {cx.scale(-1, 1); posX=-posX;  cx.translate(-this.Width,0)}
-       
+        cx.globalAlpha = this.Opacity;
         cx.drawImage(this.FrameData[this.Animation].Image[this.Frame], posX, PY, this.Width, this.Height);
+        cx.globalAlpha = 1;
         cx.restore();
         };
     PreDraw() {}
@@ -167,19 +186,23 @@ class Entity {
 
 function DrawStack() {
     for (var i = 0; i < Entities.length; i++) {
+        if (Entities[i]==null) continue;
         Entities[i].PreDraw();
 
     }
     for (var i = 0; i < Entities.length; i++) {
+        if (Entities[i]==null) continue;
         Entities[i].Phys();
     }
     for (var i = 0; i < drawStack.length; i++) {
         var zlist = drawStack[i];
-
-        for (var j = 0; j < zlist.length; j++) { // console.log("in stack");
+        for (var j = 0; j < zlist.length; j++) {
+             // console.log("in stack");
+             if (Entities[zlist[j]]==null) continue;
             Entities[zlist[j]].Draw()
         } }
     for (var i = 0; i < Entities.length; i++) {
+        if (Entities[i]==null) continue;
         Entities[i].PostDraw();
     }
 }
