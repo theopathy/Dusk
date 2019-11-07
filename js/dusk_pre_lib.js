@@ -95,3 +95,15 @@ class Layout {
 
   }
 }
+
+//MATH EXTENSION
+
+
+Math.getRandomInt = function (min, max) {
+  min = Math.ceil(min);
+  return Math.floor(Math.random() * (Math.floor(max) - min + 1)) + min;
+}
+Math.getRandomIntPower = function (min, max, pow) {
+  min = Math.ceil(min); 
+  return Math.floor((Math.random()**pow) * (Math.floor(max) - min + 1)) + min;
+}

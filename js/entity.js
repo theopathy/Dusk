@@ -6,23 +6,23 @@ for (var i = 0; i < ZIndexLimit - 1; i++) {
     drawStack[i] = new Array();
 }
 class FrameData {
-    constructor() { 
+    constructor() {
         this.Image = "";
         this.Frames = 1;
-        this.FrameDelay = 20; 
+        this.FrameDelay = 20;
         this.GetFrame = function() {
             return [] //Returns Image, SizeX, SizeY, OffsetX,OffsetY 
         }
     }
 
-    
+
 }
 class Camera {
-    static Posisition = new Vector(0,0);
+    static Posisition = new Vector(0, 0);
 
 }
 class Entity {
-    constructor(DrawOverrider=false) {
+    constructor(DrawOverrider = false) {
         this.ClassName = "unset";
         this._ZIndex = 1;
         this._Posisition = new Vector();
@@ -37,7 +37,7 @@ class Entity {
         this.Gravity = 600;
         this.Opacity = 1;
         this.NextFrameTime = 0;
-        this._DrawOverride=DrawOverrider;
+        this._DrawOverride = DrawOverrider;
         this.Image = ""
         this.Physics = new PhysObj();
         this.Physics.parent = this;
@@ -88,7 +88,7 @@ class Entity {
         var b = Math.abs(this.Height * Math.sin(r));
         return a + b;
     }
-    
+
     get RotatedHeight() {
         var r = Math.PI / 180 * (this._Rotation);
         var c = Math.abs(this.Height * Math.cos(r));
@@ -148,18 +148,19 @@ class Entity {
         drawStack[x].push(this.UID);
         this._ZIndex = x;
     }
-    Draw() { 
-        
-        if (this.DrawOverride) return ;
+    Draw() {
 
-        this.NextFrameTime=this.NextFrameTime -1 ;
+        if (this.DrawOverride) return;
+
+        this.NextFrameTime = this.NextFrameTime - 1;
         if (this.NextFrameTime <= 0) {
             this.Frame++;
-            if (this.Frame > this.FrameData[this.Animation].Image.length-1) this.Frame=0;
-            this.NextFrameTime=this.FrameData[this.Animation].FrameDelay;
+            if (this.Frame > this.FrameData[this.Animation].Image.length - 1) this.Frame = 0;
+            this.NextFrameTime = this.FrameData[this.Animation].FrameDelay;
         };
         cx.save();
-        var PX = this.Posisition.x - Camera.Posisition.x, PY = this.Posisition.y -Camera.Posisition.y
+        var PX = this.Posisition.x - Camera.Posisition.x,
+            PY = this.Posisition.y - Camera.Posisition.y
         var objx = PX + (0.5 * this.Width); // x of shape center
         var objy = PY + (0.5 * this.Height); // y of shape center
 
@@ -172,17 +173,21 @@ class Entity {
 
         // cx.fillStyle = "yellow";
         var posX = PX;
-        if (this.FlipImage) {cx.scale(-1, 1); posX=-posX;  cx.translate(-this.Width,0)}
+        if (this.FlipImage) {
+            cx.scale(-1, 1);
+            posX = -posX;
+            cx.translate(-this.Width, 0)
+        }
         cx.globalAlpha = this.Opacity;
         cx.drawImage(this.FrameData[this.Animation].Image[this.Frame], posX, PY, this.Width, this.Height);
         cx.globalAlpha = 1;
         cx.restore();
-        };
+    };
     PreDraw() {}
-    PostDraw() {  }
+    PostDraw() {}
     Phys() {}
 
-    ApplyKnockback(Velocity,Ang) {
+    ApplyKnockback(Velocity, Ang) {
         return null; // Override function
     }
 }
@@ -190,36 +195,27 @@ class Entity {
 
 function DrawStack() {
     for (var i = 0; i < Entities.length; i++) {
-        if (Entities[i]==null) continue;
+        if (Entities[i] == null) continue;
         Entities[i].PreDraw();
 
     }
     for (var i = 0; i < Entities.length; i++) {
-        if (Entities[i]==null) continue;
+        if (Entities[i] == null) continue;
         Entities[i].Phys();
     }
     for (var i = 0; i < drawStack.length; i++) {
         var zlist = drawStack[i];
         for (var j = 0; j < zlist.length; j++) {
-             // console.log("in stack");
-             if (Entities[zlist[j]]==null) continue;
+            // console.log("in stack");
+            if (Entities[zlist[j]] == null) continue;
             Entities[zlist[j]].Draw()
-        } }
+        }
+    }
     for (var i = 0; i < Entities.length; i++) {
-        if (Entities[i]==null) continue;
+        if (Entities[i] == null) continue;
         Entities[i].PostDraw();
     }
 }
-
-
-
-
-
-            
-
-
-
-
 
 class entity_ball extends Entity {
     Draw() {
@@ -253,13 +249,13 @@ class PhysObj {
     sleep() {
         this.awake = false
     }
-    get edge() { 
+    get edge() {
         var edges = []
         for (var i = 0; i < this.vertex.length; i++) {
             var b = (i + 1 == this.vertex.length) ? 0 : i + 1;
 
             edges[i] = (new Vector((this.vertex[b].x - this.vertex[i].x), (this.vertex[b].y - this.vertex[i].y)));
-    
+
         }
         return edges;
     }
@@ -270,8 +266,8 @@ class PhysObj {
         for (var i = 0; i < vertices.length; i++) {
             var b = (i + 1 == vertices.length) ? 0 : i + 1;
 
-            edges[i] = (new Vector((vertices[b].x - vertices[i].x), (vertices[b].y - vertices[i].y )));
-          //  console.log(edges[i])
+            edges[i] = (new Vector((vertices[b].x - vertices[i].x), (vertices[b].y - vertices[i].y)));
+            //  console.log(edges[i])
         }
         return edges;
     }
@@ -288,15 +284,15 @@ class PhysObj {
             points.push(new Vector(
                 (centerPos.x + (px - centerPos.x) * Math.cos(rot) - (py - centerPos.x) * Math.sin(rot)) + this.parent.Posisition.x,
                 (centerPos.y + (px - centerPos.x) * Math.sin(rot) + (py - centerPos.y) * Math.cos(rot)) + this.parent.Posisition.y //*this.parent.Height
-            )); 
-      
+            ));
+
         }
-  
+
         return points;
     }
     GetVertexGroupCount() {
-       return this.VertexMap.length; 
-  
+        return this.VertexMap.length;
+
     }
     set vertex(a) {
         this._vertex = a;
@@ -307,14 +303,15 @@ class PhysObj {
         var curArr = [...this._vertex];
         console.log("building new Vertex map for " + this.parent.ClassName)
         var i = 0
-        if (DoDumpInstead ) {newArr[0]=this._vertex}
-        else
-        while (curArr.length > 2) {
-        newArr[i++] = [curArr[0],curArr[1],curArr[2]];
-        curArr.splice(1, 1);
-        };
+        if (DoDumpInstead) {
+            newArr[0] = this._vertex
+        } else
+            while (curArr.length > 2) {
+                newArr[i++] = [curArr[0], curArr[1], curArr[2]];
+                curArr.splice(1, 1);
+            };
         this.VertexMap = newArr;
-       
+
     }
     get vertex() {
         var points = [];
@@ -328,10 +325,10 @@ class PhysObj {
             points.push(new Vector(
                 (centerPos.x + (px - centerPos.x) * Math.cos(rot) - (py - centerPos.x) * Math.sin(rot)) + this.parent.Posisition.x,
                 (centerPos.y + (px - centerPos.x) * Math.sin(rot) + (py - centerPos.y) * Math.cos(rot)) + this.parent.Posisition.y //*this.parent.Height
-            )); 
-      
+            ));
+
         }
- 
+
         return points;
     }
     center() {
@@ -347,7 +344,8 @@ class PhysObj {
 
 
 var indexMap = 0;
-function coll_draw_debug(obj,drawMap = true,offset = 0,color="red") {
+
+function coll_draw_debug(obj, drawMap = true, offset = 0, color = "red") {
 
 
     cx.lineWidth = "1";
@@ -356,42 +354,42 @@ function coll_draw_debug(obj,drawMap = true,offset = 0,color="red") {
     if (drawMap) {
         cx.strokeStyle = color;
         cx.beginPath();
-      
+
         var curPos = obj.GetVertexByIndex(offset)[0];
 
         var edges = obj.GetEdgeByIndex(offset);
 
         cx.moveTo(curPos.x, curPos.y);
         for (var i = 0; i < edges.length; i++) {
-            
+
             curPos = Vector.add(curPos, edges[i]);
             cx.lineTo(curPos.x, curPos.y);
         }
-    
-    
-    
-    
-        cx.stroke();}
 
-    else {
-    cx.beginPath();
-    var curPos = obj.vertex[0]
-    cx.moveTo(curPos.x, curPos.y);
-    for (var i = 0; i < obj.edge.length; i++) {
 
-        curPos = Vector.add(curPos, obj.edge[i]);
-        cx.lineTo(curPos.x, curPos.y);
+
+
+        cx.stroke();
+    } else {
+        cx.beginPath();
+        var curPos = obj.vertex[0]
+        cx.moveTo(curPos.x, curPos.y);
+        for (var i = 0; i < obj.edge.length; i++) {
+
+            curPos = Vector.add(curPos, obj.edge[i]);
+            cx.lineTo(curPos.x, curPos.y);
+        }
+
+
+
+
+        cx.stroke();
     }
-
-
-
-
-    cx.stroke();}
 
 
 }
 
-function checkOverlap_subRoutine(physA, physB, IndexOfA=0, IndexOfB=0,leakEdges) {
+function checkOverlap_subRoutine(physA, physB, IndexOfA = 0, IndexOfB = 0, leakEdges) {
     var prline = null;
     var pStck = [];
     var amin, amax, bmin, bmax = null;
@@ -400,7 +398,7 @@ function checkOverlap_subRoutine(physA, physB, IndexOfA=0, IndexOfB=0,leakEdges)
         physBEdge = physB.GetEdgeByIndex(IndexOfB);
     var physAVertex = physA.GetVertexByIndex(IndexOfA),
         physBVertex = physB.GetVertexByIndex(IndexOfB);
-    
+
     for (var i = 0; i < physAEdge.length; i++) {
         prline = new Vector(-physAEdge[i].y, physAEdge[i].x);
         pStck.push(prline);
@@ -446,13 +444,15 @@ function checkOverlap(physA, physB) {
     var collide = false;
     for (var i = 0; i < physA.GetVertexGroupCount(); i++) {
         for (var n = 0; n < physB.GetVertexGroupCount(); n++) {
-            collide = checkOverlap_subRoutine(physA,physB,i,n);
+            collide = checkOverlap_subRoutine(physA, physB, i, n);
             if (collide) return true;
         }
     }
     return false
-    
+
 }
 
 
-   function IsOverlap(a,b) { return checkOverlap(a,b);};
+function IsOverlap(a, b) {
+    return checkOverlap(a, b);
+};

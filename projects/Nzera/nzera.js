@@ -82,13 +82,9 @@ Phys() {
       
       if (this.IsVert )
          player.Posisition._y = player.PreviousPosition.y;
-   
     
       else
          player.Posisition._x = player.PreviousPosition.x; 
-         
-      //  player.Posisition.y = this.Posisition.y-22 + (this.Height) - 30; 
-       
 
         Camera.Posisition = Vector.add(player.Posisition, new Vector((-1280 / 2) + player.Width / 2, (-720 / 2) + (player.Height / 1.2)));
         
@@ -96,6 +92,17 @@ Phys() {
 }
 
 }
+
+tiles = []
+tiles["normal"]    = basicFloor;
+tiles["cracked01"] = loadImage(fxx + "floor_2.png");
+tiles["cracked02"] = loadImage(fxx + "floor_3.png");
+tiles["cracked03"] = loadImage(fxx + "floor_4.png");
+tiles["cracked04"] = loadImage(fxx + "floor_5.png");
+tiles["cracked05"] = loadImage(fxx + "floor_6.png");
+tiles["cracked06"] = loadImage(fxx + "floor_7.png");
+tiles["cracked06"] = loadImage(fxx + "floor_8.png");
+
 
 class dungeon extends Entity {
     constructor() {
@@ -105,17 +112,37 @@ class dungeon extends Entity {
       }
     TilesWidth = 14;
     TilesHeight = 12;
+    UniqueFloorTiles = [];
+    Doors = 0b1111; // Right to left order is, Right, Top Left Bottom. (1111) 
+
+    Generate() { 
+        this.TilesWidth = Math.getRandomInt(12,20);   
+
+        this.TilesHeight = Math.getRandomInt(10,14); 
+        
+        var RanAmtOfTiles=0;
+        RanAmtOfTiles = Math.getRandomIntPower(0,this.TilesHeight*this.TilesWidth*0.3,3); 
+        // Ensures that only half of the tiles can be cracked, Weights lower numbers as well
+        var maxAmountTiles = this.TilesWidth*this.TilesHeight;
+
+        for (var n = 0; n < RanAmtOfTiles; n++) 
+           this.UniqueFloorTiles[Math.getRandomInt(1,maxAmountTiles)] = tiles["cracked0"+Math.getRandomInt(1,6)];
+        
 
 
+    }
     Draw() {
+        var newTiles = 0;
+        for (var n = 0; n < this.TilesHeight; n++) {
         for (var i = 0; i < this.TilesWidth; i++) {
-            for (var n = 0; n < this.TilesHeight; n++) {
+             
                 
                 var posx = -Camera.Posisition.x + (i * 48) + this.Posisition.x;
                 var posy = -Camera.Posisition.y + (n * 48) + this.Posisition.y;
 
-                cx.drawImage(basicFloor,posx, posy, 16 * 3, 16 * 3)
-                
+        if (n>0) {
+        cx.drawImage(this.UniqueFloorTiles[newTiles] ? this.UniqueFloorTiles[newTiles] : basicFloor,posx, posy, 16 * 3, 16 * 3)
+                newTiles = newTiles + 1;}
                     if ((i==0 || i== this.TilesWidth-1 )&& n>0) {
                         cx.drawImage(i==0? wall_side_mid_right : wall_side_mid_left
                         ,posx,  posy - 48 , 16 * 3, 16 * 3)
@@ -194,8 +221,6 @@ entity_attack_anim.FrameDelay = 3;
 class entity_attack extends Entity {
     constructor(r = 0,x,y) {
         super();
-   
-        
     this.FrameData["attack"] = entity_attack_anim;
     this.Animation = "attack";
     this.Opacity = 0.7;
@@ -301,14 +326,16 @@ class entity_player extends Entity {
         this.PostDrawParent();
     }
     PostDrawParent() {  this.PreviousPosition = new Vector(this.Posisition.x, this.Posisition.y); }
+
+
 }
 
 var SlimeFrames = loadMultipleFrames(fxx + "zombie_idle_anim_f$t.png", 4);
 class entity_enemy_base extends entity_player {
     PreDraw() {
         this.Posisition = new Vector(
-            this.Posisition.x + (this.XSpeed * delta) * (this.XDir ? 1 : -1),
-            this.Posisition.y + (this.YSpeed * delta)  * (this.YDir ? 1 : -1));
+            this.Posisition.x + (this.XSpeed * delta),
+            this.Posisition.y + (this.YSpeed * delta));
             this.XSpeed = Math.floor(this.XSpeed * this.Friction);
             this.YSpeed = Math.floor(this.YSpeed * this.Friction)
             //this.Posisition = Vector.Add
@@ -389,32 +416,39 @@ function doAttack () {
     }
 
 }
-canvas.addEventListener("keydown", function (event) { if (event.keyCode != 32) return;
-    
-    
-    
-    if (player.SwordRotation == 0 ) {
-        player.SwordState = 1;
-        player.SwordRotation++;
-        var n = new entity_attack((GetAngleFromTwoVectors(new Vector(1280/2,720/2),new Vector(Mouse.x,Mouse.y))));
-        n.Posisition = player.Posisition;
-        doAttack ();
-    }
 
-    if (player.SwordRotation == 180 ) {
-        player.SwordState = -1;
+function attackKeyDown() { if (player.SwordRotation == 0 ) {
+    player.SwordState = 1;
+    player.SwordRotation++;
+    var n = new entity_attack((GetAngleFromTwoVectors(new Vector(1280/2,720/2),new Vector(Mouse.x,Mouse.y))));
+    n.Posisition = player.Posisition;
+    doAttack ();
+}
 
-        player.SwordRotation--;
-        var n = new entity_attack((GetAngleFromTwoVectors(new Vector(1280/2,720/2),new Vector(Mouse.x,Mouse.y))));
-        n.Posisition = player.Posisition
-        doAttack ();
-    }
+if (player.SwordRotation == 180 ) {
+    player.SwordState = -1;
 
-    }, 
-     
-     false);
+    player.SwordRotation--;
+    var n = new entity_attack((GetAngleFromTwoVectors(new Vector(1280/2,720/2),new Vector(Mouse.x,Mouse.y))));
+    n.Posisition = player.Posisition
+    doAttack ();
+}
+
+}
+canvas.addEventListener('click',attackKeyDown ) // No right click
+canvas.addEventListener("keydown", function (event) { if (event.keyCode == 32) return attackKeyDown();}, false);
 
 layout = new dungeon();
+layout.Generate();
+
+
+layout2 = new dungeon(); 
+layout2.Generate();
+
+layout2.Posisition = new Vector(layout.TilesWidth*48,0);
+
+
+
 layout_phys = new dungeon_phys();
 
 layout_phys.Width = 48 * 6;
@@ -429,8 +463,7 @@ layout_phys2.Height = 48 * 6;
 layout_phys2.Posisition.x = -48 * 8;
 layout_phys2.Posisition.y = -48 * 4;
 layout_phys2.IsVert = false;
-layout.Posisition.x = -48 * 8;
-layout.Posisition.y = -48 * 4;
+
 player = new entity_player_knight();
 player.ZIndex = 5;
 UI = new entity_UI();   
