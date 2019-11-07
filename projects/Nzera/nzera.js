@@ -306,6 +306,12 @@ class entity_player extends Entity {
 var SlimeFrames = loadMultipleFrames(fxx + "zombie_idle_anim_f$t.png", 4);
 class entity_enemy_base extends entity_player {
     PreDraw() {
+        this.Posisition = new Vector(
+            this.Posisition.x + (this.XSpeed * delta) * (this.XDir ? 1 : -1),
+            this.Posisition.y + (this.YSpeed * delta)  * (this.YDir ? 1 : -1));
+            this.XSpeed = Math.floor(this.XSpeed * this.Friction);
+            this.YSpeed = Math.floor(this.YSpeed * this.Friction)
+            //this.Posisition = Vector.Add
     }
     CanBeAttackedByPlayer = true;
     constructor(a) {
@@ -314,6 +320,11 @@ class entity_enemy_base extends entity_player {
         this.Width = 16 * 3.5;
         this.Height = 16 * 3.5;
         this.CanBeAttackedByPlayer = true;
+    }
+
+    ApplyKnockback(Velocity,Ang) {
+        this.XSpeed += Velocity * Math.cos(deg2Rads(Ang))
+        this.YSpeed += Velocity * Math.sin(deg2Rads(Ang));
     }
 }
 
@@ -351,16 +362,29 @@ class entity_player_knight extends entity_player {
  
     }
 }
-
+function checkAngle(n,b,angle) {
+    var d = (n - b + 180 + 360) % 360 - 180; // Converts degrees from 0-360 to -180 to 180.
+    return (d <= angle && d>=-angle); // returns true if between param angle.
+} 
+function GetMouseAngle() {
+    var a = GetAngleFromTwoVectors(new Vector(1280/2,720/2),new Vector(Mouse.x,Mouse.y))
+    return (a + 360) % 360;
+}
+function GetAngle360(a,b) {
+    var a = GetAngleFromTwoVectors(a,b)
+    return (a + 360) % 360;
+}
 function doAttack () {
 
     
     for (n in Entities){
         var ent = Entities[n]
-        if ( ent instanceof entity_enemy_base ) {
-        console.log(Vector.distance(player.Posisition,ent.Posisition));
-        console.log("hey")
-
+        if ( ent instanceof entity_enemy_base // Is Enemy?
+           // && 75**2 > Vector.distanceS(player.Posisition,ent.Posisition) && // IN RANGE
+           && ((player.Posisition.x-ent.Posisition.x)**2 + (player.Posisition.y-ent.Posisition.y)**2 <= (128)**2)&&
+            checkAngle(GetMouseAngle(),GetAngle360(player.Posisition,ent.Posisition),90)){ //Is Within Angle 
+        console.log(player.Posisition.x-ent.Posisition.x,player.Posisition.y-ent.Posisition.y)
+                ent.ApplyKnockback(2000,GetAngle360(player.Posisition,ent.Posisition))
         }
     }
 

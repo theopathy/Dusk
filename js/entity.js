@@ -181,6 +181,10 @@ class Entity {
     PreDraw() {}
     PostDraw() {  }
     Phys() {}
+
+    ApplyKnockback(Velocity,Ang) {
+        return null; // Override function
+    }
 }
 
 
