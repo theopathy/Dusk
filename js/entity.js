@@ -181,7 +181,7 @@ class Entity {
 
         if (this.DrawOverride) return;
 
-        this.NextFrameTime = this.NextFrameTime - 1;
+        this.NextFrameTime--;
         if (this.NextFrameTime <= 0) {
             this.Frame++;
             if (this.Frame > this.FrameData[this.Animation].Image.length - 1) this.Frame = 0;

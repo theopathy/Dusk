@@ -341,6 +341,12 @@ class dungeon extends Entity {
 Nzera = []
 Nzera.dungeon = []
 Nzera.RoomCount = 0;
+function randEnemy(){
+    return ["Zombie","Zombie","Demon","Zombie","Zombie","Demon","Ogre"][Math.getRandomInt(0,6)]
+}
+function randRoom() {
+    return [randEnemy(),randEnemy(),randEnemy(),randEnemy()]
+}
 Nzera.generateWing = function(StartRoom, Direction, width=16, height =12) {
     var d = new dungeon();
     Nzera.RoomCount++
@@ -402,9 +408,9 @@ Nzera.generateDungeon = function() {
     var Rooms = 1 //Math.getRandomInt(2,4);
     for (var i = 0; i < Rooms; i++) {
 
-       Nzera.generateWing(StartRoom, 1).Enemies = ["Zombie","Zombie","Zombie","Demon"];
-       Nzera.generateWing(StartRoom, 2).Enemies = ["Ogre","Zombie","Demon","Demon"];
-       Nzera.generateWing(StartRoom, 3).Enemies = ["Demon","Demon","Demon","Demon"];
+       Nzera.generateWing(StartRoom, 1).Enemies = randRoom();
+       Nzera.generateWing(StartRoom, 2).Enemies = randRoom();
+       Nzera.generateWing(StartRoom, 3).Enemies = randRoom();
       
        var corr1 = Nzera.generateWing(StartRoom, 0,4,12); 
      
@@ -417,7 +423,7 @@ Nzera.generateDungeon = function() {
        var bossroom = Nzera.generateWing(corr3, 0,24,12,true); 
        bossroom.Walls = 0b1111;
        bossroom.Bottom_Wall=1; 
-       bossroom.Enemies = ["entity_demonogre","","","entity_demonogre"]
+       bossroom.Enemies = ["entity_demonogre",randEnemy(),randEnemy(),"entity_demonogre"]
     }
 
 }
@@ -425,7 +431,7 @@ Nzera.generateDungeon();
 setTimeout(function(){
     for (i  in Nzera.dungeon) 
     Nzera.dungeon[i].PrepareCollision();
-}, 10);
+}, 100);
 
 
 var doorclosed = loadImage(fxx + "doors_all.png")
@@ -443,7 +449,7 @@ this.IsVert = true
 Phys() {
     if (enemyKillCount <= 0) {
         StartRoom.IsFirstTimeEntering = true;
-        StartRoom.Enemies = ["Zombie","Zombie","Demon","Zombie"]
+        StartRoom.Enemies = randRoom()
         this.delete()};
     if (IsOverlap(this.Physics,player.Physics)) {       
         if (this.IsVert )

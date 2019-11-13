@@ -25,7 +25,7 @@ class dungeon_phys extends Entity {
      
         
       Draw() {
-          return;
+        return;
         cx.beginPath();
         cx.fillStyle = "rgba(100,35,35,0.4)";
         cx.rect(-Camera.Posisition.x+this.Posisition.x, -Camera.Posisition.y+this.Posisition.y, this.Width, this.Height);
@@ -36,7 +36,7 @@ class dungeon_phys extends Entity {
         cx.restore();
       }  
     
-Phys() {
+Phys() { 
 
     
     

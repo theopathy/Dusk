@@ -120,7 +120,9 @@ class entity_player_knight extends entity_player {
     if (this.SwordState == -1 )
         this.SwordRotation = Math.max(0, (this.SwordRotation-2)/1.8 );
     
-        if (this.Health <= 0) location.reload();
+        if (this.Health <= 0) {location.reload(); 
+            this.Health = 1000;
+        }
  
     }
 }
