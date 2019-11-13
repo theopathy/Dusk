@@ -15,12 +15,23 @@ class Vector {
       
     }
 
-
-
+    add = function(b) {
+      return new Vector(this.x+b.x, this.y+b.y );
+    }
+    subtract = function(b) {
+      return new Vector(this.x-b.x, this.y-b.y );
+    }
+    multiply = function(b) {
+      return new Vector(this.x*b, this.y*b );
+    }
     static add = function(a,b) {
      if (a instanceof Vector && b instanceof Vector ) return new Vector(a.x+b.x, a.y+b.y );
      return errorHandle()
     }
+    static addF = function(a,b,c) {
+      if (a instanceof Vector  ) return new Vector(a.x+b, a.y+c );
+      return errorHandle()
+     }
     static inverse = function(a) {
       if (a instanceof Vector) return new Vector(-a.x,-a.y);
       return errorHandle()
@@ -55,7 +66,10 @@ class Vector {
       if (a instanceof Vector && b instanceof Vector ) return a.x == b.x && a.y == b.y;
       return errorHandle()
      }
-
+     static lerp = function(a,b,c) {
+      if (a instanceof Vector && b instanceof Vector ) return b.subtract(a).multiply(c).add(a);
+      return errorHandle()
+     }
   }
   
 
@@ -66,6 +80,14 @@ class Vector {
     static vector = new Vector();
     set _vector(b) {Mouse.x = b.x; Mouse.y=b.y;}
     get _vector() {return vector;} 
+
+    static get _x() {
+      return this.x + Camera.Posisition.x;
+    }
+    static get _y() {
+
+      return this.y + Camera.Posisition.y;
+    }
   }
 
 function GetAngleFromTwoVectors(object,target){
@@ -106,4 +128,21 @@ Math.getRandomInt = function (min, max) {
 Math.getRandomIntPower = function (min, max, pow) {
   min = Math.ceil(min); 
   return Math.floor((Math.random()**pow) * (Math.floor(max) - min + 1)) + min;
+}
+
+bit = []
+bit.test = function(num, bit){
+  return ((num>>bit) % 2 != 0)
+}
+
+bit.set = function(num, bit){
+  return num | 1<<bit;
+}
+
+bit.clear = function(num, bit){
+  return num & ~(1<<bit);
+}
+
+bit.toggle = function(num, bit){
+  return bit_test(num, bit) ? bit_clear(num, bit) : bit_set(num, bit);
 }

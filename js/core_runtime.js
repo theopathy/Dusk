@@ -1,5 +1,5 @@
 var canvas = document.getElementById('canvas');
-
+console.log('%c DUSK: Init ', 'background: #222; color: #bada55');
 
 
 ////// EVENTS
@@ -29,12 +29,15 @@ function updateCanvas(a,b) {
   ch = b;
 }
 var logKey = false
-
+function setFPS (f) {
+  fps = f;
+  interval     =    1000/f;
+}
  var cw = 1280,
     ch = 720,
     cx = null,
     CanvasEnableClear = true, 
-    fps = 60,
+    fps = 90,
     interval     =    1000/fps,
     lastTime     =    (new Date()).getTime(),
     currentTime  =    0,
@@ -46,6 +49,16 @@ var logKey = false
         var rect = canvas.getBoundingClientRect();
         Mouse.x = evt.clientX - rect.left
         Mouse.y = evt.clientY - rect.top}
+
+        function getMousePos(canvas, evt) {
+          var rect = canvas.getBoundingClientRect();
+         
+          Mouse.x = (evt.clientX - rect.left) / (rect.right - rect.left) * canvas.width;
+          Mouse.y =(evt.clientY - rect.top) / (rect.bottom - rect.top) * canvas.height;
+          
+      }
+      
+
       canvas.addEventListener('mousemove', function(evt) {
         Mouse._vector = getMousePos(canvas, evt);
       }, false);

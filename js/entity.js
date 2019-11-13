@@ -19,10 +19,31 @@ class FrameData {
 }
 class Camera {
     static Posisition = new Vector(0, 0);
-
+    static get RawPosition (){
+        return this.Posisition.subtract(new Vector(cw,ch))
+    } 
 }
+function loadMultipleFrames(image, namframes) {
+    var arr = []
+    var i = 0;
+    for (i; i < namframes; i++) {
+        arr[i] = loadImage(image.replace("$t", i));
+        console.log(image.replace("$t", i))
+    }
+    return arr
+}
+
+function lerp(start, end, amt) {
+    return (1 - amt) * start + amt * end
+}
+
+function deg2Rads(degrees) {
+    return Math.PI / 180 * degrees
+}
+
+
 class Entity {
-    constructor(DrawOverrider = false) {
+    constructor(NotPseudoEntity = true) {
         this.ClassName = "unset";
         this._ZIndex = 1;
         this._Posisition = new Vector();
@@ -37,7 +58,7 @@ class Entity {
         this.Gravity = 600;
         this.Opacity = 1;
         this.NextFrameTime = 0;
-        this._DrawOverride = DrawOverrider;
+        this._DrawOverride = false;
         this.Image = ""
         this.Physics = new PhysObj();
         this.Physics.parent = this;
@@ -45,16 +66,24 @@ class Entity {
         this.ClipToBounds = false;
         this.DestoryOutOfBounds = false;
         this.Color = "#ff0";
-        _UID = 1 + _UID;
-        this.UID = _UID;
+        
+
+       
+        
+        if (NotPseudoEntity) {
+            _UID = 1 + _UID;
+            this.UID = _UID;
+     
         if (typeof drawStack[this._ZIndex] !== "object") {
             drawStack[this._ZIndex] = new Array();
         };
 
-        drawStack[this._ZIndex].push(this.UID);
-        Entities[this.UID] = this;
+            Entities[this.UID] = this; 
+            drawStack[this._ZIndex].push(this.UID);
+        }
+        
 
-
+ 
     }
     delete() {
         for (var i = 0; i < ZIndexLimit - 1; i++) {
