@@ -1,0 +1,10 @@
+{
+    "Name": "Anabee",
+    "Base HP": 0x31,
+    "Base Defense": 0x31,
+    "Base Speed": 0x2D,
+    "Base SpAttack": 0x41,
+    "Base SpDefense": 0x41,
+    "Gender": 0x0C
+
+}
