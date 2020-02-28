@@ -146,3 +146,10 @@ bit.clear = function(num, bit){
 bit.toggle = function(num, bit){
   return bit_test(num, bit) ? bit_clear(num, bit) : bit_set(num, bit);
 }
+
+
+class Scene {
+
+  
+}
+
