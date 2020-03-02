@@ -23,11 +23,11 @@ class Camera {
         return this.Posisition.subtract(new Vector(cw,ch))
     } 
 }
-function loadMultipleFrames(image, namframes) {
+function loadMultipleFrames(image, namframes,offset) {
     var arr = []
     var i = 0;
     for (i; i < namframes; i++) {
-        arr[i] = loadImage(image.replace("$t", i));
+        arr[i] = loadImage(image.replace("$t", i-offset));
         console.log(image.replace("$t", i))
     }
     return arr
@@ -187,30 +187,30 @@ class Entity {
             if (this.Frame > this.FrameData[this.Animation].Image.length - 1) this.Frame = 0;
             this.NextFrameTime = this.FrameData[this.Animation].FrameDelay;
         };
-        cx.save();
+        //cx.save();
         var PX = this.Posisition.x - Camera.Posisition.x,
             PY = this.Posisition.y - Camera.Posisition.y
         var objx = PX + (0.5 * this.Width); // x of shape center
         var objy = PY + (0.5 * this.Height); // y of shape center
 
 
-        cx.translate(objx, objy)
+        //cx.translate(objx, objy)
 
 
-        cx.rotate((this.Rotation) * (Math.PI / 180))
-        cx.translate(-objx, -objy)
+      //  cx.rotate((this.Rotation) * (Math.PI / 180))
+       // cx.translate(-objx, -objy)
 
         // cx.fillStyle = "yellow";
         var posX = PX;
-        if (this.FlipImage) {
-            cx.scale(-1, 1);
-            posX = -posX;
-            cx.translate(-this.Width, 0)
-        }
+       // if (this.FlipImage) {
+       //     cx.scale(-1, 1);
+       //     posX = -posX;
+       //     cx.translate(-this.Width, 0)
+       // }
         cx.globalAlpha = this.Opacity;
-        cx.drawImage(this.FrameData[this.Animation].Image[this.Frame], posX, PY, this.Width, this.Height);
+        drawImage(this.FrameData[this.Animation].Image[this.Frame].texture, posX, PY, this.Width, this.Height);
         cx.globalAlpha = 1;
-        cx.restore();
+        //cx.restore();
     };
     PreDraw() {}
     PostDraw() {}
@@ -222,27 +222,27 @@ class Entity {
 }
 
 
-function DrawStack() {
+function DrawStack(dt) {
     for (var i = 0; i < Entities.length; i++) {
         if (Entities[i] == null) continue;
-        Entities[i].PreDraw();
+        Entities[i].PreDraw(dt);
 
     }
     for (var i = 0; i < Entities.length; i++) {
         if (Entities[i] == null) continue;
-        Entities[i].Phys();
+        Entities[i].Phys(dt);
     }
     for (var i = 0; i < drawStack.length; i++) {
         var zlist = drawStack[i];
         for (var j = 0; j < zlist.length; j++) {
             // console.log("in stack");
             if (Entities[zlist[j]] == null) continue;
-            Entities[zlist[j]].Draw()
+            Entities[zlist[j]].Draw(dt)
         }
     }
     for (var i = 0; i < Entities.length; i++) {
         if (Entities[i] == null) continue;
-        Entities[i].PostDraw();
+        Entities[i].PostDraw(dt);
     }
 }
 

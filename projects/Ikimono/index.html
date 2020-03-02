@@ -26,10 +26,47 @@
     </style>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
  <script src="https://unpkg.com/json5@^2.0.0/dist/index.min.js"></script>
+ <link href="https://fonts.googleapis.com/css?family=VT323&display=swap" rel="stylesheet">
 </head> 
 <body>
-    <canvas id="canvas" width="1280" height="720" tabindex='1'></canvas>
 
+
+    <script  id="drawImage-vertex-shader" type="x-shader/x-vertex">
+        attribute vec4 a_position;
+        attribute vec2 a_texcoord;
+        
+        uniform mat4 u_matrix;
+        
+        varying vec2 v_texcoord;
+        
+        void main() {
+           gl_Position = u_matrix * a_position;
+           v_texcoord = a_texcoord;
+        }
+        </script>
+
+
+        
+        <script  id="drawImage-fragment-shader" type="x-shader/x-fragment">
+        precision mediump float;
+        
+        varying vec2 v_texcoord;
+        
+        uniform sampler2D u_texture;
+        
+        void main() {
+           gl_FragColor = texture2D(u_texture, v_texcoord);
+        }
+        </script>
+
+
+        
+
+        <script src="https://webglfundamentals.org/webgl/resources/webgl-utils.js"></script>
+        <script src="https://webglfundamentals.org/webgl/resources/m4.js"></script>
+    <canvas id="canvas" width="1280" height="720" tabindex='1'></canvas>
+    <script src="../../js/gl-tiled.js"></script>
+    <script src="../../js/gl-tiled.resource-loader.js"></script>
     <script src="../../js/dusk_pre_lib.js"></script>
     <script src="../../js/entity.js"></script>
     <script src="../../js/core_runtime.js"></script>
