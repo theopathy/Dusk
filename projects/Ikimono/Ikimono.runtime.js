@@ -151,6 +151,7 @@ class Player extends Entity {
         var playerPosY = Math.floor(this.Posisition.y/64)+1
         return (playerPosY*256) + playerPosX;
     }
+    get tilePos () {return this.GetTilePos();};
     TileUpdate() {
         if (this.GetTileAt(2) && Math.getRandomInt(1,6)==1) lgscreen = new Battle();
         
@@ -230,7 +231,8 @@ class Battle extends Entity {
         super()
         this.DrawOverride = true;
         this.Attacker = randomProperty(Ikimono.creatures);
-        console.log(this.Attacker)
+        this.AttackerShiny = Math.getRandomInt(1,2)==8192
+        console.log(this.AttackerShiny)
     }
  
     loop = 0;
@@ -240,7 +242,7 @@ class Battle extends Entity {
         this.loop++;
         drawImage(BATTLE.texture,-8,-178,1288,728);
         drawImage(BANNER.texture,-8,550,1288,170); 
-        drawImage(Ikimono.creatures[this.Attacker.Name].frontImageShiny.texture,700,-100 ,500,500);
+        drawImage(this.AttackerShiny ? Ikimono.creatures[this.Attacker.Name].frontImageShiny.texture : Ikimono.creatures[this.Attacker.Name].frontImage.texture,700,-100 ,500,500);
         drawImage(Ikimono.creatures["Mountree"].backImage.texture,-4,105,122*5,89*5); 
     }
 } 
