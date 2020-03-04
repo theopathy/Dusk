@@ -1,6 +1,7 @@
 updateCanvas(1280, 720); //SET GAME TO 720p
 //cx.imageSmoothingEnabled = false;
-var _DEBUG  = true; var bcx = null;
+var _DEBUG  = true; var tilemap = null;
+var GAME_STYLE = "darkness";
 var Ikimono = []
 console.log('%c Ikimono: Init ', 'background: #fba; color: #342');
 console.log('%cIkimono: Counting Creatures...', 'background: #fba; color: #342');
@@ -20,6 +21,11 @@ Ikimono.creaturesJSONPATH.forEach(function (creat) {
    .then(res => {return res.text();})
   .then(data => {   var imonos = JSON5.parse(data);
     Ikimono.creatures[imonos.Name] = imonos;  
+    Ikimono.creatures[imonos.Name].frontImage = loadImageAndCreateTextureInfo(`assets/ikimonos/${imonos.Name}/front.png`)
+    Ikimono.creatures[imonos.Name].backImage = loadImageAndCreateTextureInfo(`assets/ikimonos/${imonos.Name}/back.png`)
+
+    Ikimono.creatures[imonos.Name].frontImageShiny = loadImageAndCreateTextureInfo(`assets/ikimonos/${imonos.Name}-shiny/front.png`)
+    Ikimono.creatures[imonos.Name].backImageShiny = loadImageAndCreateTextureInfo(`assets/ikimonos/${imonos.Name}-shiny/back.png`)
     Ikimono.countCreatures++;
     if (Ikimono.countCreatures == Ikimono.countCreaturesj) _goto(); 
 }); 
@@ -38,14 +44,15 @@ loader.add('Ikimono', 'maps/Ikimono/Ikimono.json');
 loader.load(function () 
 { 
 
-    bcx = new glTiled.GLTilemap(gl, loader.resources.Ikimono.data, loader.resources);
-    bcx.resizeViewport(gl.canvas.width/4,gl.canvas.height/4)
+    tilemap = new glTiled.GLTilemap(gl, loader.resources.Ikimono.data, loader.resources);
+    tilemap.resizeViewport(gl.canvas.width/4,gl.canvas.height/4)
     
 })
 
 
 var UI_HEART_EMPTY = loadImageAndCreateTextureInfo("assets/logo/Ikimono.png");
 var BG_TITLE = loadImageAndCreateTextureInfo("assets/logo/bg.jpg");
+var GRASS = loadImageAndCreateTextureInfo("assets/grass.png");
 var bg_offset = 0;
 var lgscreen = null;
 class TitlescreenLogo extends Entity {
@@ -76,10 +83,11 @@ class Level extends Entity {
 
     PreDraw(dt) {
        
-      if (bcx) {
-          bcx.update(dt)
-        bcx.draw(player.Posisition.x,player.Posisition.y);}
- 
+      if (tilemap) {
+          tilemap.update(dt)
+        
+        tilemap.draw(Camera.Posisition.x/4 , Camera.Posisition.y/4 );}
+        
     
 
     }
@@ -110,8 +118,8 @@ class Player extends Entity {
 
 
         this.Animation = "idle";
-        this.Width = 64;
-        this.Height = 64;
+        this.Width = 96;
+        this.Height = 96;
     }
     Health = 6;
     XSpeed = 0;
@@ -121,7 +129,8 @@ class Player extends Entity {
     Direction = "south";
     XDir = true;
     Friction = -1;
-    MaxSpeed = 85;
+    MaxSpeed = 200;
+    OldTile = 0;
     keys = {
         forward: "w",
         left: "a",
@@ -129,10 +138,23 @@ class Player extends Entity {
         reverse: "s",
         space: "space"
     }
+    GrassTilePos = 0;
 
-
-
-    
+    GetTileAt(layerIndex = 2) {
+        var playerPosX = Math.floor(this.Posisition.x/64)+1
+        var playerPosY = Math.floor(this.Posisition.y/64)+1
+        var offada= (playerPosY*256) + playerPosX;
+        return tilemap.layers[layerIndex].desc.data[offada];
+    }
+    GetTilePos() {
+        var playerPosX = Math.floor(this.Posisition.x/64)+1
+        var playerPosY = Math.floor(this.Posisition.y/64)+1
+        return (playerPosY*256) + playerPosX;
+    }
+    TileUpdate() {
+        if (this.GetTileAt(2) && Math.getRandomInt(1,6)==1) lgscreen = new Battle();
+        
+    }
     PreDraw(dt) {
         var orig = this.Animation;
         var speedGain = 1200;
@@ -157,8 +179,9 @@ class Player extends Entity {
         if (this.XSpeed > 0 || this.YSpeed) {
             //this.Animation = "walk"
         } else {}  //this.Animation = "idle";
-        Camera.Posisition = Vector.add(this.Posisition, new Vector((-1280 / 2) + this.Width / 2, (-720 / 2) + (this.Height / 1.2)));
-
+       // Camera.Posisition = this.Posisition;
+       Camera.Posisition = Vector.add(player.Posisition, new Vector((-1280/2)+(this.Width/2),(-720/2)+(this.Height/2)));
+       
         if (this.YSpeed > 0 ) 
             this.Direction = !this.YDir ? "north" : "south";
     
@@ -169,16 +192,64 @@ class Player extends Entity {
         else this.State = "idle";
         this.Animation = (`${this.State}_${this.Direction}`);
         if (this.Animation != orig) this.Frame = 0;
+
+
+        if (this.OldTile != this.GetTilePos()) {this.TileUpdate(); this.OldTile = this.GetTilePos(); }
     }
 
-    //Draw() {
-       // drawImage(UI_HEART_EMPTY.texture,this.Posisition.x -Camera.Posisition.x, this.Posisition.y -Camera.Posisition.y,64,64);
-  //  }
+
+
+  PostDraw() {
+      
+    if (this.GetTileAt(2) && player.Posisition.y % 64 < 32 )  {
+    var nx = Math.round((this.Posisition.x - (64/2)) / 64)*64;
+    var ny = Math.round((this.Posisition.y+ (64/2)) / 64)*64;
+ 
+    drawImage(GRASS.texture, -Camera.Posisition.x +nx + 65,  -Camera.Posisition.y+ny ,64,64)
 }
+    var playerPosX = Math.floor(player.Posisition.x/64)+1
+    var playerPosY = Math.floor(player.Posisition.y/64)+1
+    var offada= (playerPosY*256) + playerPosX;
+   // console.log(playerPosX,playerPosY, "TILE INDEX: ",offada, "TILE DATA: ",  ) 
+  }
+}
+
+
+
+var randomProperty = function (obj) {
+    var keys = Object.keys(obj);
+    return obj[keys[ keys.length * Math.random() << 0]];
+};
+
+var BATTLE = loadImageAndCreateTextureInfo("assets/battle/grassland.png");
+var BANNER = loadImageAndCreateTextureInfo("assets/battle/banner.png");
+class Battle extends Entity {
+    Player = "Herabour";
+    Attacker = "";
+    constructor() {
+        super()
+        this.DrawOverride = true;
+        this.Attacker = randomProperty(Ikimono.creatures);
+        console.log(this.Attacker)
+    }
+ 
+    loop = 0;
+    PostDraw(dt) {
+       
+        
+        this.loop++;
+        drawImage(BATTLE.texture,-8,-178,1288,728);
+        drawImage(BANNER.texture,-8,550,1288,170); 
+        drawImage(Ikimono.creatures[this.Attacker.Name].frontImageShiny.texture,700,-100 ,500,500);
+        drawImage(Ikimono.creatures["Mountree"].backImage.texture,-4,105,122*5,89*5); 
+    }
+} 
+ 
+
 
 function _goto() {
     console.log('%cIkimono: Registered Creatures: %s ', 'background: #fba; color: #342',Ikimono.countCreatures);
-    lgscreen = new TitlescreenLogo();
+    lgscreen = new Battle();
 
 } 
 var game = null;var player = null;

@@ -53,6 +53,7 @@ class Entity {
         this.Animation = "none";
         this.Width = 64
         this.FlipImage = false;
+        this.IgnoreCameraOffset = new Vector(0,0);
         this.Height = 64
         this._Rotation = 0;
         this.Gravity = 600;
@@ -188,8 +189,8 @@ class Entity {
             this.NextFrameTime = this.FrameData[this.Animation].FrameDelay;
         };
         //cx.save();
-        var PX = this.Posisition.x - Camera.Posisition.x,
-            PY = this.Posisition.y - Camera.Posisition.y
+        var PX =  -Camera.Posisition.x +  this.Posisition.x ,
+            PY =  -Camera.Posisition.y +  this.Posisition.y
         var objx = PX + (0.5 * this.Width); // x of shape center
         var objy = PY + (0.5 * this.Height); // y of shape center
 

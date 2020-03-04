@@ -1,0 +1,21 @@
+{
+    "Name": "Purryo",
+
+    "Base HP": 0x2D,
+    "Base Defense": 0x31,
+    "Base Speed": 0x31,
+    "Base SpAttack": 0x2D,
+    "Base SpDefense": 0x41,
+
+
+    "Type": "NORMAL",
+    "Type2": "NONE",
+    "Catchrate": 0x03,
+    "Gender": 0xA0,
+
+    "EXPMultiplier": 1.1,
+    "EXPOnDefeat": 28,
+
+    "Ablity": "notset",
+    "Ablity2": "notset",
+}
