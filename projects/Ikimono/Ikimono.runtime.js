@@ -77,21 +77,32 @@ class TitlescreenLogo extends Entity {
 class Level extends Entity {
     constructor() {
         super()
-        this.DrawOverride = true;
+        //this.DrawOverride = true;
     }
 
 
-    PreDraw(dt) {
+    Draw(dt) {
        
-      if (tilemap) {
-          tilemap.update(dt)
+      
+    
         
         tilemap.draw(Camera.Posisition.x/4 , Camera.Posisition.y/4 );}
         
     
 
-    }
+    
 } 
+var BLOCKABLE_TILES =
+[
+    4, 5, 6, 36, 37, 39,20, 21,23 //CLIFF
+]
+function CheckTile(tile, layer, direction) {
+    tile = tilemap.layers[0].desc.data[tile];
+    console.log(tile);
+    if (BLOCKABLE_TILES.includes(tile)) return false;
+    return true;
+}
+
 class Player extends Entity {
     constructor() {
         super()
@@ -102,7 +113,7 @@ class Player extends Entity {
         frameData.FrameDelay = 5 * (fps/60);
         return frameData;
         }
-      
+        
         this.FrameData["idle"] =   newS("s",1); 
 
         this.FrameData["idle_north"]    =       newS("n",1); 
@@ -120,6 +131,7 @@ class Player extends Entity {
         this.Animation = "idle";
         this.Width = 96;
         this.Height = 96;
+        this.Posisition = new Vector(-16,24)
     }
     Health = 6;
     XSpeed = 0;
@@ -139,25 +151,67 @@ class Player extends Entity {
         space: "space"
     }
     GrassTilePos = 0;
-
+    YTarget = 0;
+    XTarget = 0;
     GetTileAt(layerIndex = 2) {
         var playerPosX = Math.floor(this.Posisition.x/64)+1
         var playerPosY = Math.floor(this.Posisition.y/64)+1
-        var offada= (playerPosY*256) + playerPosX;
+        var offada= (playerPosY*tilemap.desc.width) + playerPosX;
         return tilemap.layers[layerIndex].desc.data[offada];
     }
     GetTilePos() {
         var playerPosX = Math.floor(this.Posisition.x/64)+1
         var playerPosY = Math.floor(this.Posisition.y/64)+1
-        return (playerPosY*256) + playerPosX;
+        return (playerPosY*tilemap.desc.width) + playerPosX;
     }
     get tilePos () {return this.GetTilePos();};
     TileUpdate() {
-        if (this.GetTileAt(2) && Math.getRandomInt(1,6)==1) lgscreen = new Battle();
+     //   if (this.GetTileAt(2) && Math.getRandomInt(1,6)==1) lgscreen = new Battle();
         
     }
     PreDraw(dt) {
         var orig = this.Animation;
+        if ((this.XTarget == 0 && this.YTarget == 0)) {
+            var GetTilePos = player.GetTilePos()
+            if (KEYS[this.keys.forward] && CheckTile(this.GetTilePos()-tilemap.desc.width,1,"e")) 
+                this.YTarget = -64;
+            else if (KEYS[this.keys.reverse] && CheckTile(this.GetTilePos()+tilemap.desc.width,1,"e")) 
+                this.YTarget = 64;
+
+            else if (KEYS[this.keys.right] && CheckTile(this.GetTilePos()+1,1,"e") ) 
+                this.XTarget = 64;
+            else if (KEYS[this.keys.left] && CheckTile(this.GetTilePos()-1,1,"e")) 
+                this.XTarget = -64;
+        }
+        var offset = 4 ;
+        if (this.XTarget > 0){
+      
+            this.Posisition.x = this.Posisition.x +  offset;
+            this.XTarget = Math.max(this.XTarget - offset,0);
+            this.State = "walk"
+            this.Direction = "east";
+        }
+        else if (this.XTarget < 0){
+            this.Posisition.x = this.Posisition.x -  offset;
+            this.XTarget =  Math.min(this.XTarget + offset,0);
+            this.State = "walk";
+            this.Direction = "west";
+        }
+        else if (this.YTarget > 0){
+            this.Posisition.y = this.Posisition.y +  offset;
+            this.YTarget = this.YTarget - offset;
+            this.State = "walk";
+            this.Direction = "south";
+        }
+        else if (this.YTarget < 0){
+            this.Posisition.y = this.Posisition.y -  offset;
+            this.YTarget = this.YTarget + offset;
+            this.State = "walk";
+            this.Direction = "north";
+        }
+        else this.State = "idle";
+       
+       // else if (this.XTarget == 0) player.Posisition.x = Math.round(player.Posisition.x / 64 )*64;
 //       var speedGain = 1200;
 //       if (KEYS[this.keys.forward] ? !KEYS[this.keys.reverse] : KEYS[this.keys.reverse]){ //XOR
 //           this.YSpeed = Math.min(this.MaxSpeed, (this.YSpeed + 1) ** 3.7);
@@ -181,17 +235,17 @@ class Player extends Entity {
 //           //this.Animation = "walk"
 //       } else {}  //this.Animation = "idle";
 //      // Camera.Posisition = this.Posisition;
-       Camera.Posisition = Vector.add(player.Posisition, new Vector((-1280/2)+(this.Width/2),(-720/2)+(this.Height/2)));
+   
        
-        if (this.YSpeed > 0 ) 
-            this.Direction = !this.YDir ? "north" : "south";
-    
-        if (this.XSpeed > 0 ) 
-            this.Direction = !this.XDir ? "west" : "east";
+       // if (this.YSpeed > 0 ) 
+       //     this.Direction = !this.YDir ? "north" : "south";
+       // if (this.XSpeed > 0 ) 
+       //     this.Direction = !this.XDir ? "west" : "east";
  
-        if ( this.XSpeed > 0 ||  this.YSpeed > 0) this.State="walk";
-        else this.State = "idle";
+       // if ( this.XSpeed > 0 ||  this.YSpeed > 0) this.State="walk";
+       // else this.State = "idle";
         this.Animation = (`${this.State}_${this.Direction}`);
+        Camera.Posisition = Vector.add(player.Posisition, new Vector((-1280/2)+(this.Width/2),(-720/2)+(this.Height/2)));
         if (this.Animation != orig) this.Frame = 0;
 
 
@@ -201,17 +255,11 @@ class Player extends Entity {
 
 
   PostDraw() {
-      
-    if (this.GetTileAt(2) && player.Posisition.y % 64 < 32 )  {
-    var nx = Math.round((this.Posisition.x - (64/2)) / 64)*64;
-    var ny = Math.round((this.Posisition.y+ (64/2)) / 64)*64;
- 
-    drawImage(GRASS.texture, -Camera.Posisition.x +nx + 65,  -Camera.Posisition.y+ny ,64,64)
-}
-    var playerPosX = Math.floor(player.Posisition.x/64)+1
-    var playerPosY = Math.floor(player.Posisition.y/64)+1
-    var offada= (playerPosY*256) + playerPosX;
-   // console.log(playerPosX,playerPosY, "TILE INDEX: ",offada, "TILE DATA: ",  ) 
+    if (this.GetTileAt(2) && player.Posisition.y % 64 < 34 )  {
+        var nx = Math.round((this.Posisition.x - (64/2)) / 64)*64;
+        var ny = Math.round((this.Posisition.y+ (64/2)) / 64)*64;
+        drawImage(GRASS.texture, -Camera.Posisition.x +nx + 65,  -Camera.Posisition.y+ny ,64,64);
+    }
   }
 }
 
@@ -231,15 +279,13 @@ class Battle extends Entity {
         super()
         this.DrawOverride = true;
         this.Attacker = randomProperty(Ikimono.creatures);
-        this.AttackerShiny = Math.getRandomInt(1,2)==8192
-        console.log(this.AttackerShiny)
+        this.AttackerShiny = Math.getRandomInt(1,8192/8)==1
+
     }
  
-    loop = 0;
+
     PostDraw(dt) {
-       
-        
-        this.loop++;
+   
         drawImage(BATTLE.texture,-8,-178,1288,728);
         drawImage(BANNER.texture,-8,550,1288,170); 
         drawImage(this.AttackerShiny ? Ikimono.creatures[this.Attacker.Name].frontImageShiny.texture : Ikimono.creatures[this.Attacker.Name].frontImage.texture,700,-100 ,500,500);
@@ -251,8 +297,8 @@ class Battle extends Entity {
 
 function _goto() {
     console.log('%cIkimono: Registered Creatures: %s ', 'background: #fba; color: #342',Ikimono.countCreatures);
-    lgscreen = new Battle();
+    lgscreen = new TitlescreenLogo();
 
 } 
 var game = null;var player = null;
-canvas.addEventListener('click',function() {if (lgscreen) {lgscreen.delete();lgscreen=null; game = new Level(); player = new Player(); };} )
+canvas.addEventListener('click',function() {if (lgscreen) {lgscreen.delete();lgscreen=null; game = new Level(); player = new Player(); player.Posisition.x +=  512;player.Posisition.y +=  512;};} )

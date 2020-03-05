@@ -106,7 +106,6 @@ function setFPS (f) {
     KEYS = []
     function doKeyDown(e) {
 
-        //alert( e.key);
  
         KEYS[e.keyCode == 32 ? "space" : e.key]=true;
         q.key=e.keyCode == 32 ? "space" : e.key;
@@ -122,29 +121,34 @@ function setFPS (f) {
 
             
    
-          
+          var DT = 0;
             var then = 0;
             function render(time) {
+               requestAnimationFrame(render);
               var now = time * 0.001;
               var deltaTime = Math.min(0.1, now - then);
               then = now;
           
               
                webglUtils.resizeCanvasToDisplaySize(gl.canvas);
+                // Tell WebGL how to convert from clip space to pixels
+                gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+                gl.clear(gl.COLOR_BUFFER_BIT);
   
-              // Tell WebGL how to convert from clip space to pixels
-              gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
-              gl.clear(gl.COLOR_BUFFER_BIT);
-
-              gl.clearColor(0, 0, 0, 1);
-    
-              gl.disable(gl.DEPTH_TEST);
-              gl.enable(gl.BLEND);
-              gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+                gl.clearColor(0, 0, 0, 1);
+      
+                gl.disable(gl.DEPTH_TEST);
+                gl.enable(gl.BLEND);
+                gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+                
 
               DrawStack(deltaTime);
+            //  setTimeout( function() {
 
-              requestAnimationFrame(render);
+               
+        
+           // }, 1000 / 60 );
+             
             }
            
 
