@@ -158,29 +158,29 @@ class Player extends Entity {
     }
     PreDraw(dt) {
         var orig = this.Animation;
-        var speedGain = 1200;
-        if (KEYS[this.keys.forward] ? !KEYS[this.keys.reverse] : KEYS[this.keys.reverse]){ //XOR
-            this.YSpeed = Math.min(this.MaxSpeed, (this.YSpeed + 1) ** 3.7);
-            this.YDir  = KEYS[this.keys.reverse];  }
-          
-        else
-            this.YSpeed = Math.max(0,(this.YSpeed*this.Friction)-1);
-            
-        if (KEYS[this.keys.right] ? !KEYS[this.keys.left] : KEYS[this.keys.left]){ //XOR 
-            this.XSpeed = Math.min(this.MaxSpeed, ((this.XSpeed + 1) ** 3.7));
-            this.XDir  = KEYS[this.keys.right];
-        }
-        else
-        this.XSpeed = Math.max(0,(this.XSpeed*this.Friction)-1);
-        this.Posisition = new Vector(
-            this.Posisition.x + (this.XSpeed * dt) * (this.XDir ? 1 : -1),
-            this.Posisition.y + (this.YSpeed * dt)  * (this.YDir ? 1 : -1));
-
-        
-        if (this.XSpeed > 0 || this.YSpeed) {
-            //this.Animation = "walk"
-        } else {}  //this.Animation = "idle";
-       // Camera.Posisition = this.Posisition;
+//       var speedGain = 1200;
+//       if (KEYS[this.keys.forward] ? !KEYS[this.keys.reverse] : KEYS[this.keys.reverse]){ //XOR
+//           this.YSpeed = Math.min(this.MaxSpeed, (this.YSpeed + 1) ** 3.7);
+//           this.YDir  = KEYS[this.keys.reverse];  }
+//         
+//       else
+//           this.YSpeed = Math.max(0,(this.YSpeed*this.Friction)-1);
+//           
+//       if (KEYS[this.keys.right] ? !KEYS[this.keys.left] : KEYS[this.keys.left]){ //XOR 
+//           this.XSpeed = Math.min(this.MaxSpeed, ((this.XSpeed + 1) ** 3.7));
+//           this.XDir  = KEYS[this.keys.right];
+//       }
+//       else
+//       this.XSpeed = Math.max(0,(this.XSpeed*this.Friction)-1);
+//       this.Posisition = new Vector(
+//           this.Posisition.x + (this.XSpeed * dt) * (this.XDir ? 1 : -1),
+//           this.Posisition.y + (this.YSpeed * dt)  * (this.YDir ? 1 : -1));
+//
+//       
+//       if (this.XSpeed > 0 || this.YSpeed) {
+//           //this.Animation = "walk"
+//       } else {}  //this.Animation = "idle";
+//      // Camera.Posisition = this.Posisition;
        Camera.Posisition = Vector.add(player.Posisition, new Vector((-1280/2)+(this.Width/2),(-720/2)+(this.Height/2)));
        
         if (this.YSpeed > 0 ) 
