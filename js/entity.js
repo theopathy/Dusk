@@ -181,7 +181,7 @@ class Entity {
     Draw() {
 
         if (this.DrawOverride) return;
-
+        if (this.Pre_Draw) this.Pre_Draw(); 
         this.NextFrameTime--;
         if (this.NextFrameTime <= 0) {
             this.Frame++;

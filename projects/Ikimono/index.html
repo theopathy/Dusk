@@ -4,7 +4,9 @@
 <head>
     <meta charset="utf-8" />
     <title>Ikimono</title>
+    <link rel="manifest" href="manifest.json">
     <style>
+        @import url('https://fonts.googleapis.com/css?family=Press+Start+2P&display=swap');
         *{margin:0;
           padding:0;
           background-color:#111;
@@ -15,15 +17,27 @@
             align-items: center;
             justify-content: center;
             height: 100vh;
+            overflow: hidden; /* Hide scrollbars */
         }
         canvas{
             border: 1px solid gray;
             background-color:#000;
-            width: 1280px;
-            height: 720px;
-            outline: none;
+            width: 100%;
+            height: 100%;
+            outline: none;  
         }
-    </style>
+        #game {
+            width: 100%;
+            height: 100%;
+        }
+        #game:-webkit-full-screen,
+#game:-moz-full-screen,
+#game:-ms-fullscreen,
+#game:fullscreen {
+    width: 100vw;
+    height: 100vh;
+    }
+        </style>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
  <script src="https://unpkg.com/json5@^2.0.0/dist/index.min.js"></script>
  <link href="https://fonts.googleapis.com/css?family=VT323&display=swap" rel="stylesheet">
@@ -64,14 +78,23 @@
 
         <script src="https://webglfundamentals.org/webgl/resources/webgl-utils.js"></script>
         <script src="https://webglfundamentals.org/webgl/resources/m4.js"></script>
+        <div id = "game" style="position: relative;">
     <canvas id="canvas" width="1280" height="720" tabindex='1'></canvas>
-
-    <script src="../../js/gl-tiled.js"></script>
-    <script src="../../js/gl-tiled.resource-loader.js"></script>
+    <script> var canvas2 = document.getElementById('text'); </script>
+    <canvas id="text" width="1280" height="720" tabindex='1' style="background-color:transparent; position: absolute;left: 0;top: 0;z-index: 1;"></canvas>
+    </div>
     <script src="../../js/dusk_pre_lib.js"></script>
     <script src="../../js/entity.js"></script>
     <script src="../../js/core_runtime.js"></script>
+    
+    
+    <script src="../../js/resource.loader.js"></script>
+    <script src="../../js/gl-tiled.js"></script>
+    <script src="../../js/gl-tiled.resource-loader.js"></script>
+    
+
 
     <script src="Ikimono.runtime.js"></script>
+    <script src="Ikimono.Moveset.js"></script>
 </body>
 </html>

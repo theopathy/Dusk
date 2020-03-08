@@ -8,7 +8,7 @@
     "Base SpDefense": 0x41,
 
 
-    "Type": "NORMAL",
+    "Type": "GRASS",
     "Type2": "NONE",
     "Catchrate": 0x03,
     "Gender": 0xA0,
