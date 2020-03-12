@@ -1,5 +1,5 @@
 {
-    "Name": "Flearoe",
+    "Name": "Mawclaw",
 
     "Base HP": 0x2D,
     "Base Defense": 0x31,
@@ -8,7 +8,7 @@
     "Base SpDefense": 0x41,
     "Base Attack": 0x2D,
 
-    "Type": "FIRE",
+    "Type": "FLYING",
     "Type2": "NONE",
     "Catchrate": 0x03,
     "Gender": 0xA0,

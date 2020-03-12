@@ -7,38 +7,6 @@ console.log('%c Ikimono: Init ', 'background: #fba; color: #342');
 console.log('%cIkimono: Counting Creatures...', 'background: #fba; color: #342');
 
 
-const vs = `
-attribute vec4 position;
-attribute vec2 texcoord;
-
-uniform mat4 u_matrix;
-
-varying vec2 v_texcoord;
-void main() {
-  gl_Position = u_matrix * position;
-  v_texcoord = texcoord;
-}
-`;
-
-const fs = `
-precision highp float;
-
-varying vec2 v_texcoord;
-
-uniform sampler2D u_texture;
-uniform float u_alphaTest;
-
-void main() {
-  vec4 color = texture2D(u_texture, v_texcoord);
-  if (color.a < u_alphaTest) {
-    discard;  // don't draw this pixel
-  }
-  gl_FragColor = color;
-}
-`;
-
-// compile shaders, link program, look up locations
-const programInfo = twgl.createProgramInfo(gl, [vs, fs]);
 
 
 var Httpreq = new XMLHttpRequest();
@@ -398,12 +366,18 @@ class Creature {
         var d = (this.getBaseStat("Attack")/this.getBaseStat("Defense"));
 
         var n = (2*attacker.Level*0.2)+2;
-        
+         
         return (n * d * p)/50 + 2
     }
     applyDamage(x,attacker) {
         var Damage = this.getPowerDamage(x.Power,attacker);
-        this.HP -= Damage;
+        var type2 = this.data.Type2 == "NONE" ? null: TYPE_MASK[this.data.Type2]
+
+        var modify = GetTypeMultiplier(x.Type,TYPE_MASK[this.data.Type])
+        console.log (attacker)
+        var STAB = attacker.data.Type == x.Type || attacker.data.Type == x.Type2 ? 1.25 : 1;
+       
+        this.HP -= Math.floor(Damage * STAB * modify);
     }
 } 
 
@@ -452,8 +426,9 @@ class Battle extends Entity {
         this.DrawOverride = true;
         console.log()
         this.Party = [];
-        this.Party.push(new Creature(randomKey(Ikimono.creatures),Math.getRandomInt(1,117)));
-        this.AttackerShiny = Math.getRandomInt(1, 1) == 1
+        this.Party.push(new Creature(randomKey(Ikimono.creatures),Math.getRandomInt(1,9)));
+        this.AttackerShiny = Math.getRandomInt(1, 8192) == 1024
+
         this.BattleText = `A random ${this.Attacker.Species}\nhas appeared!`;
         ACTIVE_BATTLE = this;
         this.TextOffset = { x: 0, y: 44 }
@@ -518,7 +493,7 @@ class Battle extends Entity {
 
     
         this.AnimationIsPlayerAttacking = this.AttackPhase == 1 ? isFirst : !isFirst ;
-        this.AnimationPlaying = this.AnimationIsPlayerAttacking ? "Tackle" : this.MoveBuffer;
+        this.AnimationPlaying = this.AnimationIsPlayerAttacking ? this.Attacker.Moves[1] : this.MoveBuffer;
        
 
         
@@ -601,6 +576,9 @@ class Battle extends Entity {
 
         drawImage(BATTLE_GRASS_BASE.texture, lerp(1284, 0, this.Transtion_Value), 500, 128 * 5, 32 * 5)
         drawImage(PARTY.active().data.backImage.texture, lerp(1280, -4, this.Transtion_Value)+ offsetsDraw.attacker.x, 105 + _b + 10 + offsetsDraw.attacker.y, 122 * 5, 89 * 5);
+        if (this.AnimationPlaying != ""  && ANIMATION[this.AnimationPlaying].PostTick)
+        ANIMATION[this.AnimationPlaying].PostTick(offsetsDraw,this.AnimationTick, this.AnimationIsPlayerAttacking ? PARTY.active() : this.Attacker, !(this.AnimationIsPlayerAttacking) ? PARTY.active() : this.Attacker,);
+
 
         drawImage(BANNER.texture, -8, 550, 1288, 170);
         drawImage(BOX.texture, 1280 - (180 * 4), 720 - (170), 180 * 4, 170);
@@ -648,7 +626,7 @@ function _goto() {
     console.log('%cIkimono: Registered Creatures: %s ', 'background: #fba; color: #342', Ikimono.countCreatures);
     lgscreen = new TitlescreenLogo();
 
-    var Starter = new Creature("Paracaw",5);
+    var Starter = new Creature("Mawkeet",5);
     PARTY.CREATURES.push(Starter);
 
     setTimeout(playGame,300)
@@ -706,9 +684,9 @@ for (var a in audio) audio[a].volume = 0.1;
 canvas2.addEventListener('click', function () {
     if (_isFirstClick) return;
     _isFirstClick = true;
-   // document.documentElement.requestFullscreen();
+   document.documentElement.requestFullscreen();
 
-    
+    playMusic(music.battle_trainer);
 
    
     

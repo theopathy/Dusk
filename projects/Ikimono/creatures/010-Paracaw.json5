@@ -8,7 +8,7 @@
     "Base SpDefense": 0x41,
     "Base Attack": 0x2D,
 
-    "Type": "WATER",
+    "Type": "FLYING",
     "Type2": "NONE",
     "Catchrate": 0x03,
     "Gender": 0xA0,

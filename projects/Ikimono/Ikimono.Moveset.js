@@ -22,7 +22,42 @@ const PSYCHIC   = 13;
 const ICE       = 14;
 const DRAGON    = 15;
 const DARK      = 16;
-
+const TYPE_MASK = {
+NORMAL    : 0,
+FIGHTING  : 1,
+FLYING    : 2,
+POISON    : 3,
+GROUND    : 4,
+ROCK      : 5,
+BUG       : 6,
+GHOST     : 7,
+STEEL     : 8,
+FIRE      : 9,
+WATER     : 10,
+GRASS     : 11, 
+ELECTRIC  : 12,
+PSYCHIC   : 13,
+ICE       : 14,
+DRAGON    : 15,
+DARK      : 16,
+0   : 0  , 
+1   : 1  ,
+2   : 2  ,
+3   : 3  ,
+4   : 4  ,
+5   : 5  ,
+6   : 6  ,
+7   : 7  ,
+8   : 8  ,
+9   : 9  ,
+10  : 10,
+11  : 11,
+12  : 12,
+13  : 13,
+14  : 14,
+15  : 15,
+16  : 16
+}
 const WEAKNESS  = 2;
 const NEUTRAL   = 1;
 const STRENGTH  = 0.5;
@@ -424,6 +459,7 @@ DEFINE_ATTACK("Tackle", "Your Ikimono slides on the floor to tackle the oppenent
 ANIMATION["Tackle"] = {
    Duration: 20 + 60,
    Power: 3,
+   Type: NORMAL,
    SFX: new Attack_SFX("Tackle"),
    tick: function (props, tick, d, attacker) {
       if (tick > 20) return props;
@@ -441,18 +477,38 @@ ANIMATION["Tackle"] = {
 
 DEFINE_ATTACK("Dive", "Your Ikimono dives onto the oppenent.",25, "ATTACK",WATER)
 
+
+
+var WATERs = loadMultipleFrames("assets/battle/WaterSplash/WaterSplash$t.png", 16, -1);
+
 ANIMATION["Dive"] = {
-   Duration: 10 + 40,
-   Power: 4,
+   Duration: 16 + 40 ,
+   Power: 40,
+   Type: WATER,
    SFX: new Attack_SFX("Tackle"),
    tick: function (props, tick, d, attacker) {
       if (tick > 20) return props;
       if (tick == 4) this.SFX.play();
       if (tick == 9) d.applyDamage(this,attacker);
+     
       else if (tick > 5) tick = 5 - (tick - 5);
 
       props.attacker.y = tick * 2 + 15;
       return props
+   },
+
+   PostTick:function (props, tick, d, attacker) {
+     
+      var tick = Math.round(tick /2);
+      console.log("tick");
+
+      if (WATERs[tick]) {
+
+      //if (!ACTIVE_BATTLE.AnimationIsPlayerAttacking)
+      drawImage(WATERs[tick].texture,750,45,384,384)
+      //else
+       drawImage(WATERs[tick].texture,64,120,512,512)
+      }  
    }
 }
 
@@ -461,6 +517,7 @@ DEFINE_ATTACK("Quick Attack", "Your Ikimono quickly jabs the target.",25, "ATTAC
 ANIMATION["Quick Attack"] = {
    Duration: 10 + 60,
    Power: 40,
+   Type: NORMAL,
    SFX: new Attack_SFX("Tackle"),
    tick: function (props, tick, d, attacker) {
       if (tick > 5) return props;
