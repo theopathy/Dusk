@@ -151,6 +151,7 @@ function render(time) {
   then = now;
   RENDER_CHILD();
 
+  
 
   // Tell WebGL how to convert from clip space to pixels
   gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
@@ -175,7 +176,7 @@ function render(time) {
 
 
 
-cx = canvas.getContext('webgl');
+cx = canvas.getContext('webgl', {stencil: true});
 var gl = cx;
 
 var program = webglUtils.createProgramFromScripts(gl, ["drawImage-vertex-shader", "drawImage-fragment-shader"]);

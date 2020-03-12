@@ -7,7 +7,7 @@
     "Base SpAttack": 0x2D,
     "Base SpDefense": 0x41,
 
-
+    "Base Attack": 0x2D,
     "Type": "WATER",
     "Type2": "NONE",
     "Catchrate": 0x03,

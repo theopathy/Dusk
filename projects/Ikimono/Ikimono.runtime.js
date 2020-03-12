@@ -7,6 +7,39 @@ console.log('%c Ikimono: Init ', 'background: #fba; color: #342');
 console.log('%cIkimono: Counting Creatures...', 'background: #fba; color: #342');
 
 
+const vs = `
+attribute vec4 position;
+attribute vec2 texcoord;
+
+uniform mat4 u_matrix;
+
+varying vec2 v_texcoord;
+void main() {
+  gl_Position = u_matrix * position;
+  v_texcoord = texcoord;
+}
+`;
+
+const fs = `
+precision highp float;
+
+varying vec2 v_texcoord;
+
+uniform sampler2D u_texture;
+uniform float u_alphaTest;
+
+void main() {
+  vec4 color = texture2D(u_texture, v_texcoord);
+  if (color.a < u_alphaTest) {
+    discard;  // don't draw this pixel
+  }
+  gl_FragColor = color;
+}
+`;
+
+// compile shaders, link program, look up locations
+const programInfo = twgl.createProgramInfo(gl, [vs, fs]);
+
 
 var Httpreq = new XMLHttpRequest();
 Httpreq.open("GET", _DEBUG ? "creatures/fake-compile.txt" : "creatures/compile.php", false);
@@ -57,10 +90,10 @@ function loadMaps() {
 }
 var UI_HEART_EMPTY = loadImageAndCreateTextureInfo("assets/logo/Ikimono.png");
 var BG_TITLE = loadImageAndCreateTextureInfo("assets/logo/bg.jpg");
-var GRASS = loadImageAndCreateTextureInfo("assets/grass.png");
+var GRASSTex = loadImageAndCreateTextureInfo("assets/grass.png");
 var bg_offset = 0;
 var lgscreen = null;
-class TitlescreenLogo extends Entity {
+class TitlescreenLogo extends Entity { 
     constructor() {
         super()
         this.DrawOverride = true;
@@ -180,7 +213,7 @@ class Player extends Entity {
         reverse: "s",
         space: "space"
     }
-    GrassTilePos = 0;
+    TilePos = 0;
     YTarget = 0;
     XTarget = 0;
     GetTileAt(layerIndex = 2) {
@@ -196,10 +229,12 @@ class Player extends Entity {
     }
     get tilePos() { return this.GetTilePos(); };
     TileUpdate() {
-           if (this.GetTileAt(2) && Math.getRandomInt(1,6)==1) lgscreen = new Battle();
+           if (this.GetTileAt(2) && Math.getRandomInt(1,6)==1) new Battle();
 
     }
     PreDraw(dt) {
+        
+        if (ACTIVE_BATTLE) return;
         var orig = this.Animation;
         if ((this.XTarget == 0 && this.YTarget == 0)) {
             var GetTilePos = player.GetTilePos()
@@ -214,32 +249,42 @@ class Player extends Entity {
                 this.XTarget = -64;
         }
         var offset = 4;
+
+    
+        var Trigger = false;
         if (this.XTarget > 0) {
 
             this.Posisition.x = this.Posisition.x + offset;
             this.XTarget = Math.max(this.XTarget - offset, 0);
             this.State = "walk"
             this.Direction = "east";
+            if (this.XTarget==0) Trigger = true;
         }
         else if (this.XTarget < 0) {
             this.Posisition.x = this.Posisition.x - offset;
             this.XTarget = Math.min(this.XTarget + offset, 0);
             this.State = "walk";
             this.Direction = "west";
+            if (this.XTarget==0) Trigger = true;
         }
         else if (this.YTarget > 0) {
             this.Posisition.y = this.Posisition.y + offset;
             this.YTarget = this.YTarget - offset;
             this.State = "walk";
             this.Direction = "south";
+            if (this.YTarget==0) Trigger = true;
         }
         else if (this.YTarget < 0) {
             this.Posisition.y = this.Posisition.y - offset;
             this.YTarget = this.YTarget + offset;
             this.State = "walk";
             this.Direction = "north";
+            if (this.YTarget==0) Trigger = true;
         }
         else this.State = "idle";
+ 
+        if (this.OldTile != this.GetTilePos() && Trigger) { this.TileUpdate(); this.OldTile = this.GetTilePos(); }
+        
 
         // else if (this.XTarget == 0) player.Posisition.x = Math.round(player.Posisition.x / 64 )*64;
         //       var speedGain = 1200;
@@ -281,7 +326,7 @@ class Player extends Entity {
         if (this.Animation != orig) this.Frame = 0;
 
 
-        if (this.OldTile != this.GetTilePos()) { this.TileUpdate(); this.OldTile = this.GetTilePos(); }
+       
 
     }
 
@@ -294,7 +339,7 @@ class Player extends Entity {
         if (this.GetTileAt(2) && player.Posisition.y % 64 < 34) {
             var nx = Math.round((this.Posisition.x - (64 / 2)) / 64) * 64;
             var ny = Math.round((this.Posisition.y + (64 / 2)) / 64) * 64;
-            drawImage(GRASS.texture, -Camera.Posisition.x + nx + 65, -Camera.Posisition.y + ny, 64, 64);
+            drawImage(GRASSTex.texture, -Camera.Posisition.x + nx + 65, -Camera.Posisition.y + ny, 64, 64);
 
         }
 
@@ -307,7 +352,10 @@ var randomProperty = function (obj) {
     var keys = Object.keys(obj);
     return obj[keys[keys.length * Math.random() << 0]];
 };
-
+var randomKey = function (obj) {
+    var keys = Object.keys(obj);
+    return keys[keys.length * Math.random() << 0];
+};
 var BATTLE = loadImageAndCreateTextureInfo("assets/battle/grassland.png");
 var BATTLE_GRASS_BASE = loadImageAndCreateTextureInfo("assets/battle/grassland_base.png");
 var BANNER = loadImageAndCreateTextureInfo("assets/battle/banner.png");
@@ -319,15 +367,47 @@ var HPBAR = {
     med: loadImageAndCreateTextureInfo("assets/battle/HP_MED.png"),
     high: loadImageAndCreateTextureInfo("assets/battle/HP_HIGH.png"),
 }
+var statuseffect = loadImageAndCreateTextureInfo("assets/battle/statuseffect.png");
+var statuseffectmask = loadImageAndCreateTextureInfo("assets/battle/statuseffectmask.png");
 
 
 PARTY = [];
+PARTY.CREATURES = [];
+PARTY.Selected = 0
+PARTY.active = function() {return this.CREATURES[this.Selected]}
 class Creature {
+    constructor(Species,level) {
+        this.Species = Species;
+        this.Level = level || 1;
+        this.HP = this.maxHP;
+        this.Moves = ["Quick Attack","Dive"];
+    }
+    getBaseStat(n) {
+        return this.data["Base "+n]
+    }
+    get data() {
+        return Ikimono.creatures[this.Species]
+    }
+    get maxHP() {
+        var I = 0; // TO IMPLEMENT
+        var E = 0; // TO IMPLEMENT
+       return Math.floor((2 * this.getBaseStat("HP") + I + E) * this.Level / 100 + this.Level + 10)
+    }
 
-}
+    getPowerDamage(p,attacker) {
+        var d = (this.getBaseStat("Attack")/this.getBaseStat("Defense"));
 
-var Starter = new Creature();
-PARTY.push();
+        var n = (2*attacker.Level*0.2)+2;
+        
+        return (n * d * p)/50 + 2
+    }
+    applyDamage(x,attacker) {
+        var Damage = this.getPowerDamage(x.Power,attacker);
+        this.HP -= Damage;
+    }
+} 
+
+
 
 function DrawOverlayedText(text, x, y) {
     ctx.fillStyle = "#707070";
@@ -346,65 +426,114 @@ function DrawBoxClick(text, x, y, width, height, textoffset, f,n) {
            ctx.fillStyle = "#020";
            if (isPress) {f(n); audio.battle_click.play();isPress=false;}
         }
-
+  
     ctx.fillText(text, x + textoffset.x, y + textoffset.y);
 }
 function DrawBoxClickTextWidth(text, x, y, height, f,n) {
-    ctx.fillStyle = "#707070";
-    textoffset = textoffset || emptyXY;
-    ctx.fillText(text, x + 2 + textoffset.x, y + 2 + textoffset.y);
+  
     ctx.fillStyle = "#404040";
     let xw = ctx.measureText(text).width;
-    if (Mouse.x > x && Mouse.x < x +  xw && Mouse.y > y - 32 && Mouse.y < y + height)
+    var c = Mouse.y - 5
+    if (Mouse.x > x && Mouse.x < x +  xw && c > y - 32 && c < y + height)
        { 
            ctx.fillStyle = "#020";
-           if (isPress) {f(n); audio.battle_click.play();}
+           if (isPress) {f(n); audio.battle_click.play();  isPress = false;}
         }
 
-    ctx.fillText(text, x + textoffset.x, y + textoffset.y);
+    ctx.fillText(text, x , y );
+    ctx.fillStyle = "#404040";
 }
 var ACTIVE_BATTLE = null;
 class Battle extends Entity {
     Player = "Purrlit";
-    Attacker = "";
+
     constructor() {
         super()
         this.DrawOverride = true;
-        this.Attacker = randomProperty(Ikimono.creatures);
-        this.AttackerShiny = Math.getRandomInt(1, 8192 / 8) == 1
-        this.BattleText = `A random ${this.Attacker.Name}\nhas appeared!`;
+        console.log()
+        this.Party = [];
+        this.Party.push(new Creature(randomKey(Ikimono.creatures),Math.getRandomInt(1,117)));
+        this.AttackerShiny = Math.getRandomInt(1, 1) == 1
+        this.BattleText = `A random ${this.Attacker.Species}\nhas appeared!`;
         ACTIVE_BATTLE = this;
         this.TextOffset = { x: 0, y: 44 }
+        playMusic(music.battle_wild);
+
+
     }
 
     BounceIkimono = 0;
     Transition_State = 0;
     Transtion_Value = 0;
 
+    MoveBuffer;
+
+    get Attacker() {
+       return this.Party[0]; // TO IMPLEMENT
+    }
+    AnimationTick = 0;
+    DelayBetweenAttacks = 0;
+    AnimationPlaying = "";
+    
+    AnimationIsPlayerAttacking = true;
+
     CurrentTextLines = [];
     CurrentBattleText = "";
-
+    AttackPhase = 0; 
     NextTimeEvent = 0;
     CurrentState = 0;
+    DealingWithDeath = 0;
     PreDraw() {
+        ctx.font = "24px  'Press Start 2P'"
         if (this.CurrentState == 1) {
-        DrawBoxClick("ATTACK",   600,   600,    180,    100,    this.TextOffset,    function(n) {n.CurrentState = 2},this); 
-        DrawBoxClick("ITEMS",    790,   600,    120,    100,    this.TextOffset,    () => alert("ITEMS  / NOT IMPLEMENTED")); 
-        DrawBoxClick("SWITCH",   960,   600,    160,    100,    this.TextOffset,    () => alert("SWITCH / NOT IMPLEMENTED")); 
-        DrawBoxClick("FLEE",     1150,  600,    160,    100,    this.TextOffset,   function(n) {ACTIVE_BATTLE.delete()} ); 
+        DrawBoxClick("ATTACK",   600,   600,    180,    50,    this.TextOffset,    function(n) {n.CurrentState = 2},this); 
+        DrawBoxClick("ITEMS",    790,   600,    120,    50,    this.TextOffset,    () => alert("ITEMS  / NOT IMPLEMENTED")); 
+        DrawBoxClick("SWITCH",   960,   600,    160,    50,    this.TextOffset,    () => alert("SWITCH / NOT IMPLEMENTED")); 
+        DrawBoxClick("FLEE",     1150,  600,    160,    50,    this.TextOffset,   function(n) {ACTIVE_BATTLE.delete(); ACTIVE_BATTLE = null; playMusic(music.town);} ); 
     }
 
-    if (this.CurrentState == 2) {
-        DrawBoxClickTextWidth("TACKLE",         600,   600,         50,   function(n) {n.CurrentState = 2},this); 
-        DrawBoxClickTextWidth("QUICK ATTACK",    950,   600,        50,  () => alert("ITEMS  / NOT IMPLEMENTED")); 
-        DrawBoxClickTextWidth("BIG FUCKING ",   600,   654,         50,    function(n) {n.CurrentState = 2},this); 
-        DrawBoxClickTextWidth("DRAGON BREATH",    950,   654,       50,   () => alert("ITEMS  / NOT IMPLEMENTED")); 
+    if (this.CurrentState == 2 && this.AttackPhase == 0) {
+        DrawBoxClickTextWidth(PARTY.active().Moves[0],         600,    620,         20,   function(n) {n.MoveBuffer = PARTY.active().Moves[0]; n.AttackPhase = 1;},this); 
+      
+        if (PARTY.active().Moves[1]) 
+          DrawBoxClickTextWidth(PARTY.active().Moves[1],         950,    620,         20,   function(n) {n.MoveBuffer = PARTY.active().Moves[1]; n.AttackPhase = 1;},this); 
+        ///DrawBoxClickTextWidth("QUICK ATTACK",    950,    620,        20,  () => alert("ITEMS  / NOT IMPLEMENTED")); 
+        ///DrawBoxClickTextWidth("BIG FUCKING ",   600,    684,         20,    function(n) {n.CurrentState = 2},this); 
+        ///DrawBoxClickTextWidth("DRAGON BREATH",    950,    684,       20,   () => alert("ITEMS  / NOT IMPLEMENTED")); 
+
+        ctx.font = "16px  'Press Start 2P'"
+        ctx.fillText("NORMAL", 600,    640);
+        if (isPress) this.CurrentState = 1;
     }
+
+    if (this.Attacker.HP <= 0 && this.DealingWithDeath == 0 ) {playMusic(music.fanfare); this.DealingWithDeath = 1; this.AttackPhase = 3};
+
+    if (this.MoveBuffer && (this.AttackPhase == 1 || this.AttackPhase == 2 ) &&  this.AnimationTick == 0 ) {
+        
+        
+        var enemySpeed = 3;
+        var playerSpeed = 5;
+        var isFirst = !(enemySpeed < playerSpeed)
+
+
+    
+        this.AnimationIsPlayerAttacking = this.AttackPhase == 1 ? isFirst : !isFirst ;
+        this.AnimationPlaying = this.AnimationIsPlayerAttacking ? "Tackle" : this.MoveBuffer;
+       
+
+        
+        //this.DelayBetweenAttacks = Math.max(DelayBetweenAttacks - 1,0)
+       
+   
+
+
+    } 
+
     } 
 
 
     Draw(dt) {
-        
+
         this.Transtion_Value = Math.min(this.Transtion_Value + (0.019 * dt * 60), 1)
         if (this.Transtion_Value == 1 && this.CurrentState == 0) this.CurrentState = 1;
        
@@ -419,18 +548,59 @@ class Battle extends Entity {
         for (var i = 0; i < this.CurrentTextLines.length; i++)
             ctx.fillText(this.CurrentTextLines[i], 32, 605 + (i * 32));
 
-    }
+        }
     PostDraw(dt) {
+
+        var offsetsDraw = {
+            attacker: {
+                x: 0,
+                y: 0,
+            },
+            defender: {
+                x: 0,
+                y: 0,
+            }
+        }
+
+
+        if (this.AnimationPlaying != "") {
+            this.AnimationTick++;
+            if (this.AnimationTick > ANIMATION[this.AnimationPlaying].Duration) {
+                this.AnimationPlaying = "";
+                this.AnimationTick = 0;
+                if (this.AttackPhase == 1 ) this.AttackPhase = 2;
+                else this.AttackPhase=0;
+            }
+
+            else {
+            offsetsDraw = ANIMATION[this.AnimationPlaying].tick(offsetsDraw,this.AnimationTick, this.AnimationIsPlayerAttacking ? PARTY.active() : this.Attacker, !(this.AnimationIsPlayerAttacking) ? PARTY.active() : this.Attacker,);
+            if (this.AnimationIsPlayerAttacking) {
+               // var attackingvalue = offsetsDraw.attacker;
+                //offsetsDraw.attacker = offsetsDraw.defender;
+                //offsetsDraw.defender = attackingvalue;
+                offsetsDraw.attacker = [offsetsDraw.defender,offsetsDraw.defender=offsetsDraw.attacker][0]; // swap values
+                offsetsDraw.defender.x *= -0.5
+            }
+          
+        }
+        }
+
+
         var _b = (Math.sin(this.BounceIkimono) * 3);
         drawImage(BATTLE.texture, -8, -178, 1288, 728);
         this.BounceIkimono = ((5 * DT) + this.BounceIkimono) % 360;
 
         drawImage(BATTLE_GRASS_BASE.texture, lerp(-725, 675, this.Transtion_Value), 280, 128 * 4, 32 * 4)
 
-        drawImage(this.AttackerShiny ? Ikimono.creatures[this.Attacker.Name].frontImageShiny.texture : Ikimono.creatures[this.Attacker.Name].frontImage.texture, lerp(-700, 750, this.Transtion_Value), -10, 400, 400);
+        
+        drawImage(this.Attacker.data["frontImage"+(this.AttackerShiny ? "Shiny" : "")].texture, lerp(-700, 750, this.Transtion_Value) + offsetsDraw.defender.x, -10+ offsetsDraw.defender.y, 400, 400);
+        const m4 = twgl.m4;
+        var _mask = true;
+
+
 
         drawImage(BATTLE_GRASS_BASE.texture, lerp(1284, 0, this.Transtion_Value), 500, 128 * 5, 32 * 5)
-        drawImage(Ikimono.creatures["Salaslam"].backImage.texture, lerp(1280, -4, this.Transtion_Value), 105 + _b + 10, 122 * 5, 89 * 5);
+        drawImage(PARTY.active().data.backImage.texture, lerp(1280, -4, this.Transtion_Value)+ offsetsDraw.attacker.x, 105 + _b + 10 + offsetsDraw.attacker.y, 122 * 5, 89 * 5);
 
         drawImage(BANNER.texture, -8, 550, 1288, 170);
         drawImage(BOX.texture, 1280 - (180 * 4), 720 - (170), 180 * 4, 170);
@@ -439,16 +609,16 @@ class Battle extends Entity {
         drawImage(HPBOX_PLAYER.texture, 1280 - (104 * 4.5) - 10, 720 - (37 * 4.5) - 180 - _b, 104 * 4.5, 37 * 4.5);
         ctx.font = "22px  'Press Start 2P'"
 
-        DrawOverlayedText("UNDEFINED", 1280 - (104 * 4.5) + 50, 720 - (37 * 4.5) - 128 - _b)
+        DrawOverlayedText(PARTY.active().nickname || PARTY.active().Species , 1280 - (104 * 4.5) + 50, 720 - (37 * 4.5) - 128 - _b)
 
         // ctx.fillText("UNDEFINED", 1280-(104*4.5) + 48, 720 - (37*4.5) - 130 - _b); 
-        var maxhp = 22;
-        var hp = 11;
+        var maxhp = PARTY.active().maxHP;
+        var hp = PARTY.active().HP;
         var p = hp / maxhp;
         var selectTexture = HPBAR.low;
         if (p > 0.5) selectTexture = HPBAR.high;
         else if (p > 0.25) selectTexture = HPBAR.med;
-        DrawOverlayedText("Lv" + 2, 1280 - 145, 720 - (37 * 4.5) - 130 - _b);
+        DrawOverlayedText("Lv" + PARTY.active().Level, 1280 - 145, 720 - (37 * 4.5) - 130 - _b);
         DrawOverlayedText(hp + "/" + maxhp, 1280 - 220, 720 - (37 * 4.5) - 55 - _b);
         drawImage(HPBOX_PLAYER.texture, 1280 - (104 * 4.5) - 10, 720 - (37 * 4.5) - 180 - _b, 104 * 4.5, 37 * 4.5);
         drawImage(selectTexture.texture, 1280 - (104 * 4.5) + 206, 720 - 270 - _b - 0.1, 216 * p, 3.05 * 4.5);
@@ -457,9 +627,16 @@ class Battle extends Entity {
         //ENEMY BOX
         drawImage(HPBOX_ENEMY.texture, 30, 30, 104 * 4.5, 37 * 4.5);
 
-        DrawOverlayedText(this.Attacker.Name, 60, 80);
-        DrawOverlayedText("Lv" + 2, 310, 80);
-
+        maxhp = this.Attacker.maxHP;
+        hp = this.Attacker.HP;
+        p = hp / maxhp;
+        selectTexture = HPBAR.low;
+        if (p > 0.5) selectTexture = HPBAR.high;
+        else if (p > 0.25) selectTexture = HPBAR.med;
+        drawImage(selectTexture.texture, 213, 128, 224 * p, 17);
+        DrawOverlayedText(this.Attacker.Species, 60, 80);
+        DrawOverlayedText("Lv" + this.Attacker.Level, 310, 80);
+         
 
 
     }
@@ -470,6 +647,13 @@ class Battle extends Entity {
 function _goto() {
     console.log('%cIkimono: Registered Creatures: %s ', 'background: #fba; color: #342', Ikimono.countCreatures);
     lgscreen = new TitlescreenLogo();
+
+    var Starter = new Creature("Paracaw",5);
+    PARTY.CREATURES.push(Starter);
+
+    setTimeout(playGame,300)
+    setTimeout(function() {new Battle()},400)
+
 }
 
 function RENDER_CHILD() {
@@ -501,20 +685,41 @@ var music = {
     battle_wild: new Audio("assets/music/battle.ogg"),
     battle_trainer: new Audio("assets/music/battle_trainer.ogg"),
     town: new Audio("assets/music/town.ogg"),
+    fanfare: new Audio("assets/audio/sfx/fanfare.ogg"),
 }
-for (var a in music) music[a].volume = 0.08;
+
+
+function playMusic(c) {
+    for (var a in music) { music[a].currentTime = 0; music[a].pause();}
+    c.play();
+}
+
+for (var a in music) music[a].volume = 0.04;
+
+for (var a in audio) audio[a].volume = 0.1;
+
+
+
+
+
 
 canvas2.addEventListener('click', function () {
     if (_isFirstClick) return;
-
     _isFirstClick = true;
+   // document.documentElement.requestFullscreen();
 
-    //music.town.play();
-    console.log("LOADED MUSIC")
+    
 
+   
+    
 })
 var lastTime = 0;
 
 canvas2.addEventListener('click', function () {
     isPress = true;
+    screen.lockOrientationUniversal = screen.lockOrientation || screen.mozLockOrientation || screen.msLockOrientation;
+
+
 })
+
+
