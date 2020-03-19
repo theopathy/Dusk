@@ -476,16 +476,12 @@ ANIMATION["Tackle"] = {
 }
 
 DEFINE_ATTACK("Dive", "Your Ikimono dives onto the oppenent.",25, "ATTACK",WATER)
-
-
-
 var WATERs = loadMultipleFrames("assets/battle/WaterSplash/WaterSplash$t.png", 16, -1);
-
 ANIMATION["Dive"] = {
    Duration: 16 + 40 ,
    Power: 40,
    Type: WATER,
-   SFX: new Attack_SFX("Tackle"),
+   SFX: new Attack_SFX("Dive"),
    tick: function (props, tick, d, attacker) {
       if (tick > 20) return props;
       if (tick == 4) this.SFX.play();
@@ -512,6 +508,41 @@ ANIMATION["Dive"] = {
    }
 }
 
+DEFINE_ATTACK("Bite", "Your Ikimono bites into the oppenent.")
+
+ANIMATION["Bite"] = {
+   Duration: 24 + 40 ,
+   Power: 60,
+   Type: DARK,
+   VFX: loadImageAndCreateTextureInfo("assets/battle/Bite.png"),
+   SFX: new Attack_SFX("Bite"),
+   tick: function (props, tick, d, attacker) {
+      //if (tick > 20) return props;
+      //if (tick == 4) this.SFX.play();
+      if (tick == 12) d.applyDamage(this,attacker);
+      if (tick == 11) this.SFX.play();
+
+      if ( tick > 11 & tick < 14)
+      props.defender.x = tick * 2 + 15;
+      if ( tick > 18 & tick < 24)
+      props.defender.x = -(tick * 2 + 15);
+      return props
+   },
+
+   PostTick:function (props, tick, d, attacker) {
+
+      if (WATERs[tick]) {
+
+      //if (!ACTIVE_BATTLE.AnimationIsPlayerAttacking)
+      var p  = !ACTIVE_BATTLE.AnimationIsPlayerAttacking ? [820,125] : [245,340]
+      if (tick < 12)
+      drawImage(this.VFX.texture,p[0],p[1] - 90 + (tick*7),240,90)
+      drawImage(this.VFX.texture,p[0],p[1] + 180 + 90 - (tick*7),240,-90)
+      //else
+//drawImage(this.VFX.texture,64,120,64,32)
+      }  
+   }
+}
 
 DEFINE_ATTACK("Quick Attack", "Your Ikimono quickly jabs the target.",25, "ATTACK",ENUM.NORMAL)
 ANIMATION["Quick Attack"] = {

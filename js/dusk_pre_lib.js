@@ -153,3 +153,12 @@ class Scene {
   
 }
 
+function SQRT(num) {
+  if (SQRT.cache[num] != null) {
+    return SQRT.cache[num]; 
+  }
+  let n = Math.sqrt(num)
+  SQRT.cache[num] = n
+  return n;
+} 
+SQRT.cache = {}; 

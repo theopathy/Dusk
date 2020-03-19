@@ -208,9 +208,9 @@ class Entity {
        //     posX = -posX;
        //     cx.translate(-this.Width, 0)
        // }
-        cx.globalAlpha = this.Opacity;
+        //cx.globalAlpha = this.Opacity;
         drawImage(this.FrameData[this.Animation].Image[this.Frame].texture, posX, PY, this.Width, this.Height);
-        cx.globalAlpha = 1;
+       // cx.globalAlpha = 1;
         //cx.restore();
     };
     PreDraw() {}

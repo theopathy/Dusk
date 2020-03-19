@@ -137,22 +137,77 @@ function doKeyUp(e) {
 
 
 
+// Thank you to Github user @addyosmani  -- https://gist.github.com/addyosmani/5434533
+var limitLoop = function (fn, fps) {
+  var then = new Date().getTime();
+  fps = fps || 60;
+  var interval = 1000 / fps;
+  return (function loop(time){
+      requestAnimationFrame(loop); 
+      var now = new Date().getTime();
+      var delta = now - then;
+      if (delta > interval) {
+          then = now - (delta % interval);
+          fn(delta/1000,time * 0.001);
+          
+      }
+  }(0));
+};
+
+
+limitLoop(function(deltaTime,n){
+now = n;
+DT = deltaTime;
+  RENDER_CHILD(); 
+
+// Tell WebGL how to convert from clip space to pixels
+gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+gl.clear(gl.COLOR_BUFFER_BIT);
+
+gl.clearColor(0, 0, 0, 1);
+
+gl.disable(gl.DEPTH_TEST);
+gl.enable(gl.BLEND);
+gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+
+CurrentTime = (now);
+DrawStack(deltaTime);
+
+//  setTimeout( function() {
+
+  isPress = false
+}, 60)
+
 
 var DT = 0;
 var then = 0;
 var CurrentTime = 0
 var isPress = false
-function render(time) {
+var frameanim = false;
+var FRAME_RATE = 15;
+var cx=0;
+var prevDelta = 0;
+function render() {
 
-  requestAnimationFrame(render);
-  var now = time * 0.001;
-  CurrentTime = (now);
-  var deltaTime = Math.min(0.1, now - then);
+}
+function render2(time) {
+
+  frameanim = requestAnimationFrame(render);
+  
+
+  let deltaTime = Math.min(0.1, now - then);
+  cx = deltaTime;
   then = now;
-  RENDER_CHILD();
+  var deltaN = time - prevDelta;
+  console.log(deltaN)
+  if ( deltaN < 1000 / FRAME_RATE) {
+    return;
+    }
+  RENDER_CHILD(); 
 
   
 
+    prevDelta = deltaN;
   // Tell WebGL how to convert from clip space to pixels
   gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
   gl.clear(gl.COLOR_BUFFER_BIT);
@@ -187,7 +242,13 @@ var texcoordLocation = gl.getAttribLocation(program, "a_texcoord");
 
 // lookup uniforms
 var matrixLocation = gl.getUniformLocation(program, "u_matrix");
+var textureMatrixLocation = gl.getUniformLocation(program, "u_textureMatrix");
 var textureLocation = gl.getUniformLocation(program, "u_texture");
+
+
+// hue position
+
+var offsetRGBHUE = gl.getUniformLocation(program, "offset");
 
 // Create a buffer.
 var positionBuffer = gl.createBuffer();
@@ -220,14 +281,17 @@ var texcoords = [
 gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(texcoords), gl.STATIC_DRAW);
 
 
+
+
+
 function drawImage(
   tex, dstX, dstY,
-  texWidth, texHeight, dstWidth, dstHeight) {
-  if (dstWidth === undefined) {
+  texWidth, texHeight, dstWidth, dstHeight,hue) {
+  if (dstWidth == undefined) {
     dstWidth = texWidth;
   }
 
-  if (dstHeight === undefined) {
+  if (dstHeight == undefined) {
     dstHeight = texHeight;
   }
 
@@ -243,7 +307,7 @@ function drawImage(
   gl.bindBuffer(gl.ARRAY_BUFFER, texcoordBuffer);
   gl.enableVertexAttribArray(texcoordLocation);
   gl.vertexAttribPointer(texcoordLocation, 2, gl.FLOAT, false, 0, 0);
-
+  gl.uniform1f(offsetRGBHUE,hue || 0);
   // this matirx will convert from pixels to clip space
   var matrix = m4.orthographic(0, gl.canvas.width, gl.canvas.height, 0, -1, 1);
 
@@ -256,6 +320,18 @@ function drawImage(
 
   // Set the matrix.
   gl.uniformMatrix4fv(matrixLocation, false, matrix);
+
+
+ 
+  // Because texture coordinates go from 0 to 1
+  // and because our texture coordinates are already a unit quad
+  // we can select an area of the texture by scaling the unit quad
+  // down
+  var texMatrix = m4.translation(0, 0, 0);
+  texMatrix = m4.scale(texMatrix, 1, 1, 1);
+ 
+  // Set the texture matrix.
+  gl.uniformMatrix4fv(textureMatrixLocation, false, texMatrix);
 
   // Tell the shader to get the texture from texture unit 0
   gl.uniform1i(textureLocation, 0);
@@ -296,6 +372,63 @@ function loadImageAndCreateTextureInfo(url) {
   return textureInfo;
 }
 
+
+
+function drawImageSplit(
+  tex, texWidth, texHeight,
+  srcX, srcY, srcWidth, srcHeight,
+  dstX, dstY, dstWidth, dstHeight,hue) {
+if (dstX === undefined) {
+  dstX = srcX;
+  srcX = 0;
+}
+if (dstY === undefined) {
+  dstY = srcY;
+  srcY = 0;
+}
+if (srcWidth === undefined) {
+  srcWidth = texWidth;
+}
+if (srcHeight === undefined) {
+  srcHeight = texHeight;
+}
+if (dstWidth === undefined) {
+  dstWidth = srcWidth;
+  srcWidth = texWidth;
+}
+if (dstHeight === undefined) {
+  dstHeight = srcHeight;
+  srcHeight = texHeight;
+}
+
+gl.bindTexture(gl.TEXTURE_2D, tex);
+
+// this matrix will convert from pixels to clip space
+var matrix = m4.orthographic(0, gl.canvas.width, gl.canvas.height, 0, -1, 1);
+
+// translate our quad to dstX, dstY
+matrix = m4.translate(matrix, dstX, dstY, 0);
+
+// scale our 1 unit quad
+// from 1 unit to dstWidth, dstHeight units
+matrix = m4.scale(matrix, dstWidth, dstHeight, 1);
+
+// Set the matrix.
+gl.uniformMatrix4fv(matrixLocation, false, matrix);
+gl.uniform1f(offsetRGBHUE,hue || 0);
+// Because texture coordinates go from 0 to 1
+// and because our texture coordinates are already a unit quad
+// we can select an area of the texture by scaling the unit quad
+// down
+var texMatrix = m4.translation(srcX / texWidth, srcY / texHeight, 0);
+texMatrix = m4.scale(texMatrix, srcWidth / texWidth, srcHeight / texHeight, 1);
+
+// Set the texture matrix.
+gl.uniformMatrix4fv(textureMatrixLocation, false, texMatrix);
+
+// draw the quad (2 triangles, 6 vertices)
+gl.drawArrays(gl.TRIANGLES, 0, 6);
+}
 
 
 requestAnimationFrame(render);
