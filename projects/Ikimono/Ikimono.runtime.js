@@ -44,7 +44,7 @@ loader.use(glTiled['resource-loader'].tiledMiddlewareFactory());
 
 loader.add('Ikimono', 'maps/Ikimono/Ikimono.json');
 loader.load(loadMaps)
-
+var bax = 0;
 function loadMaps() {
 
 
@@ -57,7 +57,14 @@ function loadMaps() {
     let objectlayer = tilemap.desc.layers[tilemap.desc.layers.length - 1];
 
     objectlayer.objects.forEach(element => {
-        console.log(element);
+        if (element.type == "npc") {
+        var npc = new NPC();
+        npc._Posisition = new Vector(((element.x/16)*64), ((element.y/16)*64)-64);
+        npc.ANIM = 
+        npc.width = 96;
+        npc.height = 96;
+        bax = npc;
+    }
     });
 
 
@@ -88,22 +95,12 @@ class TitlescreenLogo extends Entity {
 class Level extends Entity {
     constructor() {
         super()
-        //this.DrawOverride = true;
-
+        this.DrawOverride = true;
     }
-
-
-    Draw(dt) {
-
-
-
+    PreDraw(dt) {
         tilemap.update(dt * 500)
         tilemap.draw(Camera.Posisition.x / 4, Camera.Posisition.y / 4);
     }
-
-
-
-
 }
 var BLOCKABLE_TILES = [
     68, 69, 70
@@ -204,9 +201,23 @@ class Player extends Entity {
 
     }
     PreDraw(dt) {
-
+        
         if (ACTIVE_BATTLE) return;
+        KEYS[this.keys.forward] =     key_MOVEUP;   //KEYS[this.keys.forward] ||
+        KEYS[this.keys.reverse] =     key_MOVEDOWN; //KEYS[this.keys.reverse] ||
+        KEYS[this.keys.right] =       key_MOVERIGHT;//KEYS[this.keys.right]   || 
+        KEYS[this.keys.left] =        key_MOVELEFT; //KEYS[this.keys.left]    ||
+
+        key_MOVERIGHT   = false;
+        key_MOVEUP      = false;
+        key_MOVEDOWN    = false;
+        key_MOVELEFT    = false;
         var orig = this.Animation;
+        console.log(KEYS[this.keys.space]);
+        
+        if (KEYS[this.keys.space])
+        console.log()
+
         if ((this.XTarget == 0 && this.YTarget == 0)) {
             var GetTilePos = player.GetTilePos()
             if (KEYS[this.keys.forward] && CheckTile(this.GetTilePos() - tilemap.desc.width, 1, "north"))
@@ -278,11 +289,64 @@ class Player extends Entity {
             drawImage(GRASSTex.texture, -Camera.Posisition.x + nx + 65, -Camera.Posisition.y + ny, 64, 64);
 
         }
+      if (ACTIVE_BATTLE) 
+          $(".o-pad").diss_a_pear();
+      else
+      $(".o-pad").hi_vis_vest();
+    }
+}
+NPC_IMAGES = {
+    Jeff: loadImageAndCreateTextureInfo("assets/characters/overworld/jeff.png")
+}
+class NPC extends Entity {
+    constructor() {
+        super()
+        //this.DrawOverride = true; 
+
+        this.Animation = "idle";
+        this.Width = 96;
+        this.Height = 96;
+        this.Posisition = new Vector(-16, 24);
+    }
+    ANIM = "Jeff";
+    GetTileAt(layerIndex = 2) {
+        var playerPosX = Math.floor(this.Posisition.x / 64) + 1
+        var playerPosY = Math.floor(this.Posisition.y / 64) + 1
+        var offada = (playerPosY * tilemap.desc.width) + playerPosX;
+        return tilemap.layers[layerIndex].desc.data[offada];
+    }
+    GetTilePos() {
+        var playerPosX = Math.floor(this.Posisition.x / 64) + 1
+        var playerPosY = Math.floor(this.Posisition.y / 64) + 1
+        return (playerPosY * tilemap.desc.width) + playerPosX;
+    }
+    get tilePos() {
+        return this.GetTilePos();
+    };
+    TileUpdate() {
+        if (this.GetTileAt(2) && Math.getRandomInt(1, 6) == 1) new Battle();
+
+    }
+    Draw(dt) {
+        
+        drawImage(NPC_IMAGES.Jeff.texture, -Camera.Posisition.x + this.Posisition.x, -Camera.Posisition.y + this.Posisition.y, 96,96);
+       
+    }
+
+    Pre_Draw() {
+        drawImage(entity_shadow.texture, -Camera.Posisition.x + this.Posisition.x + 17, -Camera.Posisition.y + this.Posisition.y + 64, 64, 32);
+    }
+
+    PostDraw() {
+        if (this.GetTileAt(2) && this.Posisition.y % 64 < 34) {
+            var nx = Math.round((this.Posisition.x - (64 / 2)) / 64) * 64;
+            var ny = Math.round((this.Posisition.y + (64 / 2)) / 64) * 64;
+            drawImage(GRASSTex.texture, -Camera.Posisition.x + nx + 65, -Camera.Posisition.y + ny, 64, 64);
+
+        }
 
     }
 }
-
-
 
 var randomProperty = function (obj) {
     var keys = Object.keys(obj);
@@ -358,9 +422,9 @@ class Creature {
     }
     get maxHP() {
         var I = (this.IV.HP); // TO IMPLEMENT
-        var E = (this.EV.HP / 4); // TO IMPLEMENT
+        var E = (this.EV.HP / 3); // TO IMPLEMENT
 
-        return Math.floor((2 * this.getBaseStat("HP") + I + E) * this.Level / 100 + this.Level + 10)
+        return Math.floor((3 * this.getBaseStat("HP") + I + E) * this.Level / 80 + this.Level + 9)
     }
     get Speed() {
         return this.getBaseStat("HP")
@@ -380,7 +444,8 @@ class Creature {
 
         var STAB = attacker.data.Type == x.Type || attacker.data.Type == x.Type2 ? 1.25 : 1;
 
-        this.HP -= Math.floor(Damage * STAB * modify);
+  
+        this.HP = Math.max(this.HP-Math.floor(Damage * STAB * modify),0)
     }
 }
 
@@ -399,7 +464,7 @@ function _goto() {
     setTimeout(playGame, 300)
     setTimeout(function () {
         new Battle()
-    }, 400)
+    }, 40)
 
 }
 
@@ -466,7 +531,7 @@ canvas2.addEventListener('click', function () {
     _isFirstClick = true;
     //document.documentElement.requestFullscreen();
 
-    playMusic(music.battle_trainer);
+    //playMusic(music.battle_trainer);
 
 
 

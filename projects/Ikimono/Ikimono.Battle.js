@@ -138,7 +138,8 @@ class Battle extends Entity {
         if (this.Attacker.HP <= 0 && this.DealingWithDeath == 0) {
             playMusic(music.fanfare);
             this.DealingWithDeath = 1;
-            this.AttackPhase = 3
+            this.AttackPhase = 3 
+            this.AnimationDeathIndex = now;
         };
 
         if (this.MoveBuffer && (this.AttackPhase == 1 || this.AttackPhase == 2) && this.AnimationTick == 0) {
@@ -203,7 +204,7 @@ class Battle extends Entity {
                 this.AnimationPlaying = "";
                 this.AnimationTick = 0;
                 if (this.AttackPhase == 1) this.AttackPhase = 2;
-                else this.AttackPhase = 0;
+                else this.AttackPhase = this.AttackPhase == 3 ? 3 : 0;
             } else {
                 offsetsDraw = ANIMATION[this.AnimationPlaying].tick(offsetsDraw, this.AnimationTick, this.AnimationIsPlayerAttacking ? PARTY.active() : this.Attacker, !(this.AnimationIsPlayerAttacking) ? PARTY.active() : this.Attacker, );
                 if (this.AnimationIsPlayerAttacking) {

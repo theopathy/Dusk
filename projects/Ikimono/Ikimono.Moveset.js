@@ -512,7 +512,7 @@ DEFINE_ATTACK("Bite", "Your Ikimono bites into the oppenent.")
 
 ANIMATION["Bite"] = {
    Duration: 24 + 40 ,
-   Power: 60,
+   Power: 6000,
    Type: DARK,
    VFX: loadImageAndCreateTextureInfo("assets/battle/Bite.png"),
    SFX: new Attack_SFX("Bite"),

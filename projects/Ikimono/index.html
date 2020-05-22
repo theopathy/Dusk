@@ -6,6 +6,7 @@
     <meta charset="utf-8" />
     <title>Ikimono</title>
     <link rel="manifest" href="manifest.json">
+    <meta name="viewport" content="width=device-width">
     <style>
         @import url('https://fonts.googleapis.com/css?family=Press+Start+2P&display=swap');
         #game {
@@ -43,7 +44,7 @@
         }
 
 
-    
+    .set{overflow:hidden;padding:30px;text-align:center}.set .d-pad a.left:hover{background:linear-gradient(-90deg,#ddd 0,#eee 50%)}.d-pad a.left:after{left:0;bottom:0;transform:translate(0,100%);border-bottom-left-radius:50%;pointer-events:none}.d-pad a.left:before{left:40%;top:50%;transform:translate(-50%,-50%);border-width:13px 19px 13px 0;border-color:transparent #aaa transparent transparent}.d-pad a.left:active:before{border-right-color:#333}.d-pad a.left:hover:before{left:35%}.d-pad a.right{top:50%;right:0;transform:translate(0,-50%);border-radius:50% 17% 17% 50%}.d-pad a.right:hover{background:linear-gradient(90deg,#ddd 0,#eee 50%)}.d-pad a.right:after{right:0;top:0;transform:translate(0,-100%);border-top-right-radius:50%;pointer-events:none}.d-pad a.right:before{right:40%;top:50%;transform:translate(50%,-50%);border-width:13px 0 13px 19px;border-color:transparent transparent transparent #aaa}.d-pad a.right:active:before{border-left-color:#333}.d-pad a.right:hover:before{right:35%}.d-pad.up a.up:before{border-bottom-color:#333}.d-pad.down a.down:before{border-top-color:#333}.d-pad.left a.left:before{border-right-color:#333}.d-pad.right a.right:before{border-left-color:#333}.o-pad{position:relative;background:#ddd;width:200px;height:200px;border-radius:50%;overflow:hidden}.o-pad:after{content:'';position:absolute;z-index:2;width:20%;height:20%;top:50%;left:50%;background:#ddd;border-radius:50%;transform:translate(-50%,-50%);display:none;transition:all .25s;cursor:pointer}.o-pad:hover:after{width:30%;height:30%}.o-pad a{display:block;position:absolute;-webkit-tap-highlight-color:rgba(255,255,255,0);width:50%;height:50%;text-align:center;transform:rotate(45deg);border:1px solid rgba(0,0,0,.2)}.o-pad a:before{content:'';position:absolute;width:60%;height:60%;top:50%;left:50%;background:rgba(255,255,255,.1);border-radius:50%;transform:translate(-50%,-50%);transition:all .25s;cursor:pointer;display:none}.o-pad a:after{content:'';position:absolute;width:0;height:0;border-radius:5px;border-style:solid;transform:translate(-50%,-50%) rotate(-45deg);transition:all .25s}.o-pad a.up{bottom:50%;left:50%;transform:translate(-50%,-20%) rotate(45deg);border-top-left-radius:50%;z-index:1}.o-pad a.up:hover{background:linear-gradient(315deg,rgba(255,255,255,0) 15%,rgba(255,255,255,.4) 100%)}.o-pad a.up:before{left:57%;top:57%}.o-pad a.up:after{left:53%;top:53%;border-width:0 13px 19px 13px;border-color:transparent transparent #aaa transparent}.o-pad a.up:active:after{border-bottom-color:#333}.o-pad a.down{top:50%;left:50%;transform:translate(-50%,20%) rotate(45deg);border-bottom-right-radius:50%;z-index:1}.o-pad a.down:hover{background:linear-gradient(135deg,rgba(255,255,255,0) 15%,rgba(255,255,255,.4) 100%)}.o-pad a.down:before{left:43%;top:43%}.o-pad a.down:after{left:47%;top:47%;border-width:19px 13px 0 13px;border-color:#aaa transparent transparent transparent}.o-pad a.down:active:after{border-top-color:#333}.o-pad a.left{top:50%;right:50%;transform:translate(-20%,-50%) rotate(45deg);border-bottom-left-radius:50%;border:none}.o-pad a.left:hover{background:linear-gradient(225deg,rgba(255,255,255,0) 15%,rgba(255,255,255,.4) 100%)}.o-pad a.left:before{left:57%;top:43%}.o-pad a.left:after{left:53%;top:47%;border-width:13px 19px 13px 0;border-color:transparent #aaa transparent transparent}.o-pad a.left:active:after{border-right-color:#333}.o-pad a.right{top:50%;left:50%;transform:translate(20%,-50%) rotate(45deg);border-top-right-radius:50%;border:none}.o-pad a.right:hover{background:linear-gradient(45deg,rgba(255,255,255,0) 15%,rgba(255,255,255,.4) 100%)}.o-pad a.right:before{left:43%;top:57%}.o-pad a.right:after{left:47%;top:53%;border-width:13px 0 13px 19px;border-color:transparent transparent transparent #aaa}.o-pad a.right:active:after{border-left-color:#333}.o-pad a:hover:after{left:50%;top:50%}.dark .d-pad a{border-radius:35%}.dark .d-pad a,.dark .d-pad:before{background:#111}.dark .d-pad a.up:hover{background:linear-gradient(0deg,#111 0,#222 50%)}.dark .d-pad a.right:hover{background:linear-gradient(90deg,#111 0,#222 50%)}
 
         #game:-webkit-full-screen,
         #game:-moz-full-screen,
@@ -113,7 +114,7 @@
      
             
             vec3 finishedCol = hsv2rgb(newCol);
-            if (color.a < 0.5) {
+            if (color.a < 0.09) {
                 discard;  // don't draw this pixel
               }
            gl_FragColor = vec4(finishedCol, color.w);
@@ -129,6 +130,19 @@
 
     <script src="https://webglfundamentals.org/webgl/resources/webgl-utils.js"></script>
     <script src="https://webglfundamentals.org/webgl/resources/m4.js"></script>
+    <script>
+        var key_MOVERIGHT   = false;
+        var key_MOVEUP      = false;
+        var key_MOVEDOWN    = false;
+        var key_MOVELEFT    = false;
+        jQuery.fn.hi_vis_vest = function() {
+    return this.css('visibility', 'visible');
+};
+
+jQuery.fn.diss_a_pear = function() {
+    return this.css('visibility', 'hidden');
+};
+    </script> 
     <div id="game" style="position: relative;">
         <canvas id="canvas" width="1280" height="720" tabindex='0'
         style="background-color:transparent; position: absolute;left: 0;top: 0;"
@@ -136,7 +150,32 @@
         <script> var canvas2 = document.getElementById('text'); </script>
         <canvas id="text" width="1280" height="720" tabindex='1'
             style="background-color:transparent; position: absolute;left: 0;top: 0;z-index: 1;"></canvas>
+            <nav class="o-pad" style = "z-index: 100; top:40%; left:50px;">
+                <a class="up" onclick="key_MOVERIGHT=true"></a>
+                <a class="right" href="#"></a>
+                <a class="down" href="#"></a>
+                <a class="left" href="#"></a>  
+              </nav>
     </div>
+    <script>
+        $('.right').click(function(){
+            key_MOVERIGHT = true;
+        }); 
+
+        $('.left').click(function(){
+            key_MOVELEFT = true;
+        }); 
+
+        $('.up').click(function(){
+            key_MOVEUP = true;
+        }); 
+
+        $('.down').click(function(){
+            key_MOVEDOWN = true;
+        }); 
+
+
+    </script>
     <script src="../../js/dusk_pre_lib.js"></script>
     <script src="../../js/entity.js"></script>
     <script src="../../js/core_runtime.js"></script>
